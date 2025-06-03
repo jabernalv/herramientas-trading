@@ -24,12 +24,21 @@
       <h1 class="text-2xl font-bold mb-6 text-center">Calculadora de lote en trading</h1>
 
       <div class="mb-6 relative">
-        <label class="block font-semibold mb-1">Par de divisas o activo</label>
+        <label for="pair" class="block font-semibold mb-1">Par de divisas o activo</label>
         <div class="relative">
           <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
             <i data-lucide="globe" class="w-4 h-4"></i>
           </span>
-          <select v-model="pair" @focus="setAyuda('pair')" @change="setAyuda('pair')" class="w-full pl-10 border border-gray-300 rounded p-2">
+          <select
+            id="pair"
+            aria-label="Selecciona un par de divisas o activo"
+            v-model="pair"
+            @focus="setAyuda('pair')"
+            @change="setAyuda('pair')"
+            class="w-full pl-10 border border-gray-300 rounded p-2"
+            :aria-invalid="!pair"
+            required
+          >
             <option disabled value="">-- Selecciona un par --</option>
             <option v-for="(pip, key) in pipTable" :key="key" :value="key">{{ key }}</option>
           </select>
@@ -38,44 +47,84 @@
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div class="relative">
-          <label class="block font-semibold mb-1">Tamaño de cuenta (USD)</label>
+          <label for="accountSize" class="block font-semibold mb-1">Tamaño de cuenta (USD)</label>
           <span class="absolute left-3 top-10 text-gray-500">
             <i data-lucide="wallet" class="w-4 h-4"></i>
           </span>
-          <input v-model.number="accountSize" @focus="setAyuda('accountSize')" type="number" step="1"
-            class="w-full text-right pl-10 border border-gray-300 rounded p-2">
+          <input
+            id="accountSize"
+            aria-label="Tamaño de cuenta en dólares"
+            v-model.number="accountSize"
+            @focus="setAyuda('accountSize')"
+            type="number"
+            step="1"
+            min="1"
+            class="w-full text-right pl-10 border border-gray-300 rounded p-2"
+            :aria-invalid="!accountSize"
+            required
+          >
         </div>
 
         <div class="relative">
-          <label class="block font-semibold mb-1">Riesgo por operación (%)</label>
+          <label for="riskPercent" class="block font-semibold mb-1">Riesgo por operación (%)</label>
           <span class="absolute left-3 top-10 text-gray-500">
             <i data-lucide="percent" class="w-4 h-4"></i>
           </span>
-          <input v-model.number="riskPercent" @focus="setAyuda('riskPercent')" type="number" step="0.01"
-            class="w-full text-right pl-10 border border-gray-300 rounded p-2">
+          <input
+            id="riskPercent"
+            aria-label="Riesgo por operación en porcentaje"
+            v-model.number="riskPercent"
+            @focus="setAyuda('riskPercent')"
+            type="number"
+            step="0.01"
+            min="0.01"
+            max="10"
+            class="w-full text-right pl-10 border border-gray-300 rounded p-2"
+            :aria-invalid="!riskPercent"
+            required
+          >
         </div>
 
         <div class="relative">
-          <label class="block font-semibold mb-1">Stop loss (pips)</label>
+          <label for="stopLossPips" class="block font-semibold mb-1">Stop loss (pips)</label>
           <span class="absolute left-3 top-10 text-gray-500">
             <i data-lucide="slash" class="w-4 h-4"></i>
           </span>
-          <input v-model.number="stopLossPips" @focus="setAyuda('stopLossPips')" type="number" step="0.1"
-            class="w-full text-right pl-10 border border-gray-300 rounded p-2">
+          <input
+            id="stopLossPips"
+            aria-label="Stop loss en pips"
+            v-model.number="stopLossPips"
+            @focus="setAyuda('stopLossPips')"
+            type="number"
+            step="0.1"
+            min="0.1"
+            class="w-full text-right pl-10 border border-gray-300 rounded p-2"
+            :aria-invalid="!stopLossPips"
+            required
+          >
         </div>
       </div>
 
       <div class="text-center mb-6">
-        <button @click="handleClick"
-          class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 inline-flex items-center gap-2">
+        <button
+          @click="handleClick"
+          class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 inline-flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          :disabled="!isFormValid"
+          aria-label="Calcular tamaño de lote"
+        >
           <i data-lucide="calculator" class="w-4 h-4"></i>
           Calcular lote
         </button>
       </div>
 
       <div v-if="lotSize !== null" class="text-center mb-6">
-        <p class="text-lg font-semibold">Tamaño de lote sugerido:</p>
-        <p class="text-2xl text-green-600 font-bold">{{ lotSize.toFixed(2) }}</p>
+        <div class="inline-flex flex-col items-center justify-center px-6 py-4 rounded-lg bg-green-100 border border-green-300 shadow-md animate-fade-in">
+          <div class="flex items-center gap-2 mb-2">
+            <i data-lucide="check-circle" class="w-6 h-6 text-green-600"></i>
+            <span class="text-lg font-semibold">Tamaño de lote sugerido:</span>
+          </div>
+          <p class="text-3xl text-green-700 font-extrabold tracking-wide">{{ lotSize.toFixed(2) }}</p>
+        </div>
       </div>
 
       <div class="mb-4">
@@ -142,6 +191,28 @@
           }
         };
       },
+      computed: {
+        isFormValid() {
+          return (
+            this.pair &&
+            this.accountSize > 0 &&
+            this.riskPercent > 0 &&
+            this.stopLossPips > 0
+          );
+        }
+      },
+      watch: {
+        // Guardar automáticamente los datos relevantes en localStorage
+        pair(newVal) {
+          localStorage.setItem('lastPair', newVal || '');
+        },
+        accountSize(newVal) {
+          localStorage.setItem('lastAccountSize', newVal || '');
+        },
+        riskPercent(newVal) {
+          localStorage.setItem('lastRiskPercent', newVal || '');
+        }
+      },
       methods: {
         setAyuda(id) {
           this.ayudaActiva = id;
@@ -158,15 +229,24 @@
             this.lotSize = riskAmount / (this.stopLossPips * pipValue);
           } else {
             this.lotSize = null;
-            alert('Completa todos los campos y selecciona un par.');
           }
         },
         handleClick() {
           this.calculateLot();
           this.setAyuda('result');
+        },
+        loadLocalStorage() {
+          // Cargar datos guardados si existen
+          const lastPair = localStorage.getItem('lastPair');
+          const lastAccountSize = localStorage.getItem('lastAccountSize');
+          const lastRiskPercent = localStorage.getItem('lastRiskPercent');
+          if (lastPair && this.pipTable[lastPair]) this.pair = lastPair;
+          if (lastAccountSize) this.accountSize = Number(lastAccountSize);
+          if (lastRiskPercent) this.riskPercent = Number(lastRiskPercent);
         }
       },
       mounted() {
+        this.loadLocalStorage(); // NUEVO
         lucide.createIcons();
       },
       updated() {
@@ -174,5 +254,15 @@
       }
     }).mount('#app');
   </script>
+  <style>
+    /* Animación para resaltar el resultado */
+    @keyframes fade-in {
+      from { opacity: 0; transform: translateY(10px);}
+      to { opacity: 1; transform: translateY(0);}
+    }
+    .animate-fade-in {
+      animation: fade-in 0.7s;
+    }
+  </style>
 </body>
 </html>
