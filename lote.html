@@ -8,8 +8,9 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center px-4 py-8">
-  <div id="app" class="bg-white shadow-md rounded p-6 max-w-7xl w-full grid grid-cols-1 md:grid-cols-3 gap-6">
-    <div class="md:col-span-3 mb-4">
+  <div id="app" class="bg-white shadow-md rounded p-6 max-w-7xl w-full grid grid-cols-1 md:grid-cols-3 gap-6 md:auto-rows-min">
+    
+    <div class="md:col-span-3 mb-4 md:order-1 order-1">
       <nav class="text-sm text-gray-600">
         <a href="index.html" class="text-blue-700 hover:underline inline-flex items-center gap-1">
           <i data-lucide="arrow-left" class="w-4 h-4"></i>
@@ -20,8 +21,17 @@
       </nav>
     </div>
 
-    <!-- Columna principal -->
-    <div class="md:col-span-2">
+    <!-- Ayuda contextual -->
+    <div class="md:col-span-1 md:order-3 order-3">
+      <div class="bg-gray-100 border border-gray-300 p-4 rounded text-sm leading-relaxed h-full">
+        <h2 class="font-bold text-lg mb-2">Ayuda contextual</h2>
+        <p v-if="ayudaActiva">{{ ayudas[ayudaActiva] }}</p>
+        <p v-else class="text-gray-500">Pasa el cursor o enfoca un campo para ver la explicación.</p>
+      </div>
+    </div>
+
+    <!-- Contenido principal -->
+    <div class="md:col-span-2 md:order-2 order-2">
       <h1 class="text-2xl font-bold mb-6 text-center">Calculadora de lote en trading</h1>
 
       <div class="mb-6 relative">
@@ -32,7 +42,6 @@
           </span>
           <select
             id="pair"
-            aria-label="Selecciona un par de divisas o activo"
             v-model="pair"
             @focus="setAyuda('pair')"
             @change="setAyuda('pair')"
@@ -54,7 +63,6 @@
           </span>
           <input
             id="accountSize"
-            aria-label="Tamaño de cuenta en dólares"
             v-model.number="accountSize"
             @focus="setAyuda('accountSize')"
             type="number"
@@ -73,7 +81,6 @@
           </span>
           <input
             id="riskPercent"
-            aria-label="Riesgo por operación en porcentaje"
             v-model.number="riskPercent"
             @focus="setAyuda('riskPercent')"
             type="number"
@@ -93,7 +100,6 @@
           </span>
           <input
             id="stopLossPips"
-            aria-label="Stop loss en pips"
             v-model.number="stopLossPips"
             @focus="setAyuda('stopLossPips')"
             type="number"
@@ -111,7 +117,6 @@
           @click="handleClick"
           class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 inline-flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           :disabled="!isFormValid"
-          aria-label="Calcular tamaño de lote"
         >
           <i data-lucide="calculator" class="w-4 h-4"></i>
           Calcular lote
@@ -138,23 +143,12 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(pip, key) in pipTable" :key="key"
-              :class="{'bg-blue-100 text-blue-800 font-semibold': pair === key}">
+            <tr v-for="(pip, key) in pipTable" :key="key" :class="{'bg-blue-100 text-blue-800 font-semibold': pair === key}">
               <td class="p-2">{{ key }}</td>
               <td class="p-2">${{ pip.toFixed(2) }}</td>
             </tr>
           </tbody>
         </table>
-      </div>
-    </div>
-
-    <!-- Caja de ayuda contextual: SIEMPRE después del contenido principal en HTML, 
-         pero en escritorio se coloca a la derecha con grid -->
-    <div class="md:col-span-1">
-      <div class="bg-gray-100 border border-gray-300 p-4 rounded text-sm leading-relaxed h-full">
-        <h2 class="font-bold text-lg mb-2">Ayuda contextual</h2>
-        <p v-if="ayudaActiva">{{ ayudas[ayudaActiva] }}</p>
-        <p v-else class="text-gray-500">Pasa el cursor o enfoca un campo para ver la explicación.</p>
       </div>
     </div>
   </div>
@@ -186,23 +180,18 @@
             XAGEUR: 5
           },
           ayudas: {
-            pair: 'En trading, un par de divisas representa la relación entre dos monedas: una que se compra y otra que se vende. Por ejemplo, en EUR/USD, compras euros vendiendo dólares. Cada par tiene características propias: los pares principales suelen tener spreads más bajos y mayor liquidez, mientras que los cruzados o los que involucran metales pueden ser más volátiles. Además, el valor de cada pip varía según el par. Esta elección no solo afecta el riesgo, sino también la velocidad y el comportamiento de la operación.',
-            accountSize: 'El tamaño de la cuenta es el capital total disponible en tu bróker para operar. No es simplemente un número: representa tu capacidad de asumir pérdidas y de sostener tu operativa en el tiempo. Una cuenta más grande permite distribuir mejor el riesgo y sobrevivir a rachas negativas. Aquí, este valor es la base para calcular cuánto dinero estás dispuesto a arriesgar en cada operación según tu porcentaje de riesgo.',
-            riskPercent: 'Este es uno de los pilares de la gestión monetaria. Indica qué fracción de tu cuenta estás dispuesto a perder si la operación sale mal. Un trader profesional rara vez arriesga más del 1-2% por operación. Arriesgar más puede acelerar las pérdidas en una mala racha y llevar a un colapso emocional. Definir correctamente este porcentaje es clave para la sostenibilidad y longevidad en el trading.',
-            stopLossPips: 'El “stop loss” define el punto donde asumes que tu hipótesis era incorrecta. Medido en pips, representa la distancia entre tu punto de entrada y tu nivel de protección. No es un número arbitrario: debe estar basado en el análisis técnico y considerar la volatilidad del par. Cuanto más grande sea el stop, más lote necesitas reducir para mantener el riesgo fijo. Es una herramienta para controlar pérdidas, no una barrera emocional.',
-            pipTable: 'El pip (Percentage in Point) es la unidad mínima de movimiento de precio en un par. El valor monetario del pip depende del par y del tamaño del lote. Por ejemplo, en EUR/USD 1 pip = $10 por lote estándar. Pero en XAU/USD o USD/JPY ese valor cambia. Conocer el valor del pip es fundamental para medir tu exposición real y ajustar el tamaño del lote para mantener el riesgo bajo control. La tabla te da valores aproximados usados por la mayoría de brókers.',
-            result: 'El tamaño del lote es la cantidad de unidades de un par que vas a comprar o vender. No es una cifra arbitraria: se calcula con base en tu riesgo, tu capital y tu stop. Un lote estándar son 100.000 unidades; un micro lote, 1.000. Este cálculo convierte tu análisis en una decisión cuantitativa. Ignorar esta relación es operar a ciegas. Aquí obtienes el tamaño exacto para que tu riesgo esté controlado.'
+            pair: 'En trading, un par de divisas representa la relación entre dos monedas: una que se compra y otra que se vende. Por ejemplo, en EUR/USD, compras euros vendiendo dólares...',
+            accountSize: 'El tamaño de la cuenta es el capital total disponible en tu bróker para operar...',
+            riskPercent: 'Este es uno de los pilares de la gestión monetaria...',
+            stopLossPips: 'El “stop loss” define el punto donde asumes que tu hipótesis era incorrecta...',
+            pipTable: 'El pip (Percentage in Point) es la unidad mínima de movimiento de precio en un par...',
+            result: 'El tamaño del lote es la cantidad de unidades de un par que vas a comprar o vender...'
           }
         };
       },
       computed: {
         isFormValid() {
-          return (
-            this.pair &&
-            this.accountSize > 0 &&
-            this.riskPercent > 0 &&
-            this.stopLossPips > 0
-          );
+          return this.pair && this.accountSize > 0 && this.riskPercent > 0 && this.stopLossPips > 0;
         }
       },
       watch: {
@@ -221,12 +210,7 @@
           this.ayudaActiva = id;
         },
         calculateLot() {
-          if (
-            this.pair &&
-            this.accountSize > 0 &&
-            this.riskPercent > 0 &&
-            this.stopLossPips > 0
-          ) {
+          if (this.isFormValid) {
             const pipValue = this.pipTable[this.pair];
             const riskAmount = this.accountSize * (this.riskPercent / 100);
             this.lotSize = riskAmount / (this.stopLossPips * pipValue);
@@ -256,6 +240,7 @@
       }
     }).mount('#app');
   </script>
+
   <style>
     @keyframes fade-in {
       from { opacity: 0; transform: translateY(10px);}
