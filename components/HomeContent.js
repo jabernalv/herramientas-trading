@@ -124,6 +124,27 @@ const HomeContent = {
                   Calcula el margen necesario para abrir una posición según el tamaño del lote y el apalancamiento seleccionado.
                 </p>
               </a>
+
+              <!-- Mercados -->
+              <a
+                href="#"
+                @click.prevent="showTool('mercados')"
+                class="group block border border-gray-200 rounded-lg p-5 sm:p-6 bg-white shadow hover:shadow-lg transition"
+              >
+                <div class="flex items-center gap-4">
+                  <div class="bg-red-100 text-red-700 p-3 rounded-full">
+                    <i data-lucide="globe" class="w-6 h-6"></i>
+                  </div>
+                  <h2
+                    class="text-base sm:text-lg font-semibold text-gray-800 group-hover:text-red-700"
+                  >
+                    Estado de los Mercados
+                  </h2>
+                </div>
+                <p class="mt-3 text-gray-600 text-sm">
+                  Consulta el estado actual de los principales mercados bursátiles del mundo, con horarios locales y tiempos de apertura/cierre.
+                </p>
+              </a>
             </div>
           </div>
         </div>
@@ -142,6 +163,7 @@ const HomeContent = {
     "breakeven-calculator": BreakevenCalculator,
     "simulador-calculator": SimuladorCalculator,
     "margen-calculator": MargenCalculator,
+    "mercados-calculator": MercadosCalculator,
   },
   data() {
     return {
@@ -156,6 +178,7 @@ const HomeContent = {
         breakeven: "breakeven-calculator",
         simulador: "simulador-calculator",
         margen: "margen-calculator",
+        mercados: "mercados-calculator",
       };
       return components[this.currentTool] || null;
     },
@@ -172,7 +195,14 @@ const HomeContent = {
     handlePopState() {
       const hash = window.location.hash.slice(1);
       if (
-        ["lote", "ganancia", "breakeven", "simulador", "margen"].includes(hash)
+        [
+          "lote",
+          "ganancia",
+          "breakeven",
+          "simulador",
+          "margen",
+          "mercados",
+        ].includes(hash)
       ) {
         this.currentTool = hash;
       } else {
@@ -183,7 +213,14 @@ const HomeContent = {
   mounted() {
     const hash = window.location.hash.slice(1);
     if (
-      ["lote", "ganancia", "breakeven", "simulador", "margen"].includes(hash)
+      [
+        "lote",
+        "ganancia",
+        "breakeven",
+        "simulador",
+        "margen",
+        "mercados",
+      ].includes(hash)
     ) {
       this.currentTool = hash;
     }

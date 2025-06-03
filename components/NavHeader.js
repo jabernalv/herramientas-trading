@@ -7,6 +7,10 @@ const NavHeader = {
           Herramientas de trading
         </a>
         <div class="flex space-x-4">
+          <a href="#" @click.prevent="selectOption('mercados')" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2">
+            <i data-lucide="globe" class="w-4 h-4"></i>
+            Mercados
+          </a>
           <div class="relative">
             <button 
               @click="toggleMenu"
