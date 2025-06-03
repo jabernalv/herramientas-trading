@@ -37,7 +37,8 @@
      height="64"
      rx="12"
      fill="#04395E"
-     id="rect1" />
+     id="rect1"
+     style="opacity:0.00000001" />
   <line
      x1="16"
      y1="20"
