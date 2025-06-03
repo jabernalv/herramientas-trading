@@ -24,8 +24,8 @@ const LoteCalculator = {
                 required
               >
                 <option disabled value="">-- Selecciona un par --</option>
-                <option v-for="(pip, key) in pipTable" :key="key" :value="key">
-                  {{ key }}
+                <option v-for="symbol in Object.keys(tradingPairs)" :key="symbol" :value="symbol">
+                  {{ symbol }} - {{ tradingPairs[symbol].nombre }}
                 </option>
               </select>
             </div>
@@ -121,7 +121,7 @@ const LoteCalculator = {
                 <div>Capital = \${{ accountSize }}</div>
                 <div>Riesgo = {{ riskPercent }}%</div>
                 <div>Stop Loss = {{ stopLossPips }} pips</div>
-                <div>Valor del Pip = \${{ pipTable[pair] }}</div>
+                <div>Valor del Pip = \${{ tradingPairs[pair]?.valorPip }}</div>
               </div>
             </div>
           </div>
@@ -132,17 +132,21 @@ const LoteCalculator = {
               <thead class="bg-gray-200 text-gray-800">
                 <tr>
                   <th class="p-2 text-left">Par</th>
-                  <th class="p-2 text-left">Valor pip por lote estándar (USD)</th>
+                  <th class="p-2 text-left">Nombre</th>
+                  <th class="p-2 text-right">Valor pip (USD)</th>
+                  <th class="p-2 text-right">Unidades/Lote</th>
                 </tr>
               </thead>
               <tbody>
                 <tr
-                  v-for="(pip, key) in pipTable"
-                  :key="key"
-                  :class="{'bg-blue-100 text-blue-800 font-semibold': pair === key}"
+                  v-for="(info, symbol) in tradingPairs"
+                  :key="symbol"
+                  :class="{'bg-blue-100 text-blue-800 font-semibold': pair === symbol}"
                 >
-                  <td class="p-2">{{ key }}</td>
-                  <td class="p-2">\${{ pip }}</td>
+                  <td class="p-2">{{ symbol }}</td>
+                  <td class="p-2">{{ info.nombre }}</td>
+                  <td class="p-2 text-right">\${{ info.valorPip.toFixed(2) }}</td>
+                  <td class="p-2 text-right">{{ info.unidades.toLocaleString() }}</td>
                 </tr>
               </tbody>
             </table>
@@ -155,6 +159,10 @@ const LoteCalculator = {
           <p v-else class="text-gray-500">
             Pasa el cursor o enfoca un campo para ver la explicación.
           </p>
+          <div v-if="pair && tradingPairs[pair]" class="mt-4 p-3 bg-white rounded border border-gray-200">
+            <h3 class="font-semibold mb-2">{{ tradingPairs[pair].nombre }}</h3>
+            <p class="text-gray-600">{{ tradingPairs[pair].descripcion }}</p>
+          </div>
         </div>
       </div>
     </div>
@@ -167,20 +175,7 @@ const LoteCalculator = {
       stopLossPips: null,
       lotSize: null,
       ayudaActiva: "",
-      pipTable: {
-        EURUSD: 10.0,
-        GBPUSD: 10.0,
-        USDJPY: 9.13,
-        GBPJPY: 9.13,
-        AUDUSD: 10.0,
-        NZDUSD: 10.0,
-        USDCHF: 10.0,
-        USDCAD: 10.0,
-        XAUUSD: 1.0,
-        XAGUSD: 5.0,
-        XAUEUR: 1.0,
-        XAGEUR: 5.0,
-      },
+      tradingPairs: window.tradingPairs,
       ayudas: {
         pair: "En trading, un par de divisas representa la relación entre dos monedas: una que se compra y otra que se vende. Por ejemplo, en EUR/USD, compras euros vendiendo dólares. Cada par tiene características propias: los pares principales suelen tener spreads más bajos y mayor liquidez, mientras que los cruzados o los que involucran metales pueden ser más volátiles. Además, el valor de cada pip varía según el par. Esta elección no solo afecta el riesgo, sino también la velocidad y el comportamiento de la operación.",
         accountSize:
@@ -190,7 +185,7 @@ const LoteCalculator = {
         stopLossPips:
           'El "stop loss" define el punto donde asumes que tu hipótesis era incorrecta. Medido en pips, representa la distancia entre tu punto de entrada y tu nivel de protección. No es un número arbitrario: debe estar basado en el análisis técnico y considerar la volatilidad del par. Cuanto más grande sea el stop, más lote necesitas reducir para mantener el riesgo fijo. Es una herramienta para controlar pérdidas, no una barrera emocional.',
         pipTable:
-          "El pip (Percentage in Point) es la unidad mínima de movimiento de precio en un par. El valor monetario del pip depende del par y del tamaño del lote. Por ejemplo, en EUR/USD 1 pip = $10 por lote estándar. Pero en XAU/USD o USD/JPY ese valor cambia. Conocer el valor del pip es fundamental para medir tu exposición real y ajustar el tamaño del lote para mantener el riesgo bajo control. La tabla te da valores aproximados usados por la mayoría de brókers.",
+          "El pip (Percentage in Point) es la unidad mínima de movimiento de precio en un par. El valor monetario del pip depende del par y del tamaño del lote. La tabla muestra el valor del pip por lote estándar y las unidades que representa cada lote. Por ejemplo, en forex un lote estándar suele ser 100,000 unidades, mientras que en metales como el oro puede variar. Conocer estos valores es fundamental para calcular correctamente tu exposición al riesgo.",
         result:
           "El tamaño del lote es la cantidad de unidades de un par que vas a comprar o vender. Se calcula utilizando la siguiente fórmula matemática:<br><br>$$\\text{Lote} = \\dfrac{\\text{Capital} \\times \\text{% Riesgo}}{\\text{Stop Loss} \\times \\text{Valor del Pip}}$$<br><br>Cada elemento de la fórmula tiene un propósito específico:<br>• Capital: Tu balance total disponible<br>• % Riesgo: El porcentaje que estás dispuesto a arriesgar<br>• Stop Loss: Tu nivel de salida en pips<br>• Valor del Pip: El valor monetario de cada pip según el par<br><br>Esta fórmula asegura que tu riesgo monetario real coincida exactamente con el porcentaje que deseas arriesgar.",
       },
@@ -205,16 +200,12 @@ const LoteCalculator = {
         this.stopLossPips > 0
       );
     },
-    formatPipValue(pip) {
-      const value = Number(pip);
-      return value ? "$" + value.toFixed(2) : "$0.00";
-    },
     formulaHTML() {
       if (!this.lotSize) return "";
       const formula = `$$\\text{Lote} = \\dfrac{${this.accountSize} \\times ${
         this.riskPercent
       }\\%}{${this.stopLossPips} \\times ${
-        this.pipTable[this.pair]
+        tradingPairs[this.pair].valorPip
       }} = ${this.lotSize.toFixed(2)}$$`;
       return formula;
     },
@@ -229,6 +220,9 @@ const LoteCalculator = {
     riskPercent(newVal) {
       localStorage.setItem("lastRiskPercent", newVal || "");
     },
+    stopLossPips(newVal) {
+      localStorage.setItem("lastStopLossPips", newVal || "");
+    },
   },
   methods: {
     setAyuda(id) {
@@ -241,7 +235,7 @@ const LoteCalculator = {
         this.riskPercent > 0 &&
         this.stopLossPips > 0
       ) {
-        const pipValue = Number(this.pipTable[this.pair]);
+        const pipValue = tradingPairs[this.pair].valorPip;
         const riskAmount = this.accountSize * (this.riskPercent / 100);
         this.lotSize = riskAmount / (this.stopLossPips * pipValue);
       } else {
@@ -251,28 +245,24 @@ const LoteCalculator = {
     handleClick() {
       this.calculateLot();
       this.setAyuda("result");
-      // Dar tiempo a que se renderice el contenido antes de actualizar MathJax
-      this.$nextTick(() => {
-        if (window.MathJax) {
-          window.MathJax.typesetPromise && window.MathJax.typesetPromise();
-        }
-      });
     },
     loadLocalStorage() {
-      const lastPair = localStorage.getItem("lastPair");
-      const lastAccountSize = localStorage.getItem("lastAccountSize");
-      const lastRiskPercent = localStorage.getItem("lastRiskPercent");
-      if (lastPair && this.pipTable[lastPair]) this.pair = lastPair;
-      if (lastAccountSize) this.accountSize = Number(lastAccountSize);
-      if (lastRiskPercent) this.riskPercent = Number(lastRiskPercent);
+      this.pair = localStorage.getItem("lastPair") || "";
+      this.accountSize =
+        Number(localStorage.getItem("lastAccountSize")) || null;
+      this.riskPercent =
+        Number(localStorage.getItem("lastRiskPercent")) || null;
+      this.stopLossPips =
+        Number(localStorage.getItem("lastStopLossPips")) || null;
     },
   },
   mounted() {
     this.loadLocalStorage();
-    lucide.createIcons();
   },
   updated() {
-    lucide.createIcons();
+    if (window.MathJax) {
+      window.MathJax.typeset();
+    }
   },
 };
 

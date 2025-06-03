@@ -2,35 +2,16 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <title>Herramientas de trading</title>
+    <title>Herramientas de Trading</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/lucide"></script>
     <script
-      type="text/javascript"
       id="MathJax-script"
       async
       src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
     ></script>
-    <script>
-      window.MathJax = {
-        tex: {
-          inlineMath: [
-            ["$", "$"],
-            ["\\(", "\\)"],
-          ],
-          displayMath: [
-            ["$$", "$$"],
-            ["\\[", "\\]"],
-          ],
-          processEscapes: true,
-        },
-        svg: {
-          fontCache: "global",
-        },
-      };
-    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <style>
       @keyframes fade-in {
@@ -64,17 +45,19 @@
     </div>
 
     <!-- Importar componentes -->
+    <script src="data/trading-pairs.js"></script>
     <script src="components/NavHeader.js"></script>
     <script src="components/FooterComponent.js"></script>
     <script src="components/LoteCalculator.js"></script>
     <script src="components/GananciaCalculator.js"></script>
     <script src="components/BreakevenCalculator.js"></script>
     <script src="components/SimuladorCalculator.js"></script>
+    <script src="components/MargenCalculator.js"></script>
     <script src="components/HomeContent.js"></script>
 
     <script>
       const { createApp } = Vue;
-      createApp({
+      const app = createApp({
         components: {
           "nav-header": NavHeader,
           "footer-component": FooterComponent,
@@ -83,8 +66,16 @@
           "lote-calculator": LoteCalculator,
           "breakeven-calculator": BreakevenCalculator,
           "simulador-calculator": SimuladorCalculator,
+          "margen-calculator": MargenCalculator,
         },
-      }).mount("#app");
+      });
+
+      app.mount("#app");
+
+      // Inicializar los íconos de Lucide después de que Vue haya montado la aplicación
+      document.addEventListener("DOMContentLoaded", () => {
+        lucide.createIcons();
+      });
     </script>
   </body>
 </html>
