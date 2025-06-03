@@ -21,7 +21,7 @@
     </div>
 
     <!-- Columna principal -->
-    <div class="md:col-span-2 order-1 md:order-1">
+    <div class="md:col-span-2">
       <h1 class="text-2xl font-bold mb-6 text-center">Calculadora de lote en trading</h1>
 
       <div class="mb-6 relative">
@@ -148,12 +148,14 @@
       </div>
     </div>
 
-    <!-- Caja de ayuda -->
-    <div class="order-2 md:order-2 md:col-span-1 order-last md:order-none
-                bg-gray-100 border border-gray-300 p-4 rounded text-sm leading-relaxed">
-      <h2 class="font-bold text-lg mb-2">Ayuda contextual</h2>
-      <p v-if="ayudaActiva">{{ ayudas[ayudaActiva] }}</p>
-      <p v-else class="text-gray-500">Pasa el cursor o enfoca un campo para ver la explicación.</p>
+    <!-- Caja de ayuda contextual: SIEMPRE después del contenido principal en HTML, 
+         pero en escritorio se coloca a la derecha con grid -->
+    <div class="md:col-span-1">
+      <div class="bg-gray-100 border border-gray-300 p-4 rounded text-sm leading-relaxed h-full">
+        <h2 class="font-bold text-lg mb-2">Ayuda contextual</h2>
+        <p v-if="ayudaActiva">{{ ayudas[ayudaActiva] }}</p>
+        <p v-else class="text-gray-500">Pasa el cursor o enfoca un campo para ver la explicación.</p>
+      </div>
     </div>
   </div>
 
