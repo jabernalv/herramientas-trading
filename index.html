@@ -4,12 +4,49 @@
     <meta charset="UTF-8" />
     <title>Herramientas de trading</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Importar componentes -->
-    <script src="components/NavHeader.js"></script>
-    <script src="components/FooterComponent.js"></script>
+    <script
+      type="text/javascript"
+      id="MathJax-script"
+      async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    ></script>
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [
+            ["$", "$"],
+            ["\\(", "\\)"],
+          ],
+          displayMath: [
+            ["$$", "$$"],
+            ["\\[", "\\]"],
+          ],
+          processEscapes: true,
+        },
+        svg: {
+          fontCache: "global",
+        },
+      };
+    </script>
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <style>
+      @keyframes fade-in {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .animate-fade-in {
+        animation: fade-in 0.7s;
+      }
+    </style>
   </head>
   <body class="bg-gray-50 min-h-screen">
     <div id="app" class="pb-16">
@@ -19,124 +56,35 @@
       <!-- Espaciador para compensar el nav fijo -->
       <div class="h-16"></div>
 
-      <div class="flex items-center justify-center px-2 py-6">
-        <div class="max-w-5xl w-full">
-          <header class="text-center mb-8">
-            <h1 class="text-2xl sm:text-3xl font-bold text-blue-800">
-              Herramientas de apoyo para el análisis técnico y la gestión del
-              riesgo
-            </h1>
-            <p class="mt-3 text-gray-700 text-sm md:text-base">
-              Este entorno contiene utilidades académicas diseñadas para apoyar
-              la toma de decisiones en trading. No se trata de adivinar
-              movimientos, sino de planear con fundamento y gestionar el riesgo
-              con criterio.
-            </p>
-          </header>
-
-          <main class="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
-            <!-- Lote -->
-            <a
-              href="lote.html"
-              class="group block border border-gray-200 rounded-lg p-5 sm:p-6 bg-white shadow hover:shadow-lg transition"
-            >
-              <div class="flex items-center gap-4">
-                <div class="bg-blue-100 text-blue-700 p-3 rounded-full">
-                  <i data-lucide="ruler" class="w-6 h-6"></i>
-                </div>
-                <h2
-                  class="text-base sm:text-lg font-semibold text-gray-800 group-hover:text-blue-700"
-                >
-                  Calculadora de tamaño de lote
-                </h2>
-              </div>
-              <p class="mt-3 text-gray-600 text-sm">
-                Calcula el tamaño de lote adecuado para una operación con base
-                en tu riesgo por operación y el stop loss definido.
-              </p>
-            </a>
-
-            <!-- Ganancia -->
-            <a
-              href="ganancia.html"
-              class="group block border border-gray-200 rounded-lg p-5 sm:p-6 bg-white shadow hover:shadow-lg transition"
-            >
-              <div class="flex items-center gap-4">
-                <div class="bg-green-100 text-green-700 p-3 rounded-full">
-                  <i data-lucide="dollar-sign" class="w-6 h-6"></i>
-                </div>
-                <h2
-                  class="text-base sm:text-lg font-semibold text-gray-800 group-hover:text-green-700"
-                >
-                  Calculadora de ganancia por operación
-                </h2>
-              </div>
-              <p class="mt-3 text-gray-600 text-sm">
-                Estima tu ganancia o pérdida en una operación según precios de
-                entrada y salida, tipo de operación y apalancamiento.
-              </p>
-            </a>
-
-            <!-- Break-even -->
-            <a
-              href="breakeven.html"
-              class="group block border border-gray-200 rounded-lg p-5 sm:p-6 bg-white shadow hover:shadow-lg transition"
-            >
-              <div class="flex items-center gap-4">
-                <div class="bg-yellow-100 text-yellow-700 p-3 rounded-full">
-                  <i data-lucide="divide" class="w-6 h-6"></i>
-                </div>
-                <h2
-                  class="text-base sm:text-lg font-semibold text-gray-800 group-hover:text-yellow-700"
-                >
-                  Calculadora de break-even
-                </h2>
-              </div>
-              <p class="mt-3 text-gray-600 text-sm">
-                Calcula cuántos pips debe moverse el precio para cubrir el
-                spread y comisiones, y quedar en punto de equilibrio.
-              </p>
-            </a>
-
-            <!-- Simulador R:R -->
-            <a
-              href="simulador.html"
-              class="group block border border-gray-200 rounded-lg p-5 sm:p-6 bg-white shadow hover:shadow-lg transition"
-            >
-              <div class="flex items-center gap-4">
-                <div class="bg-purple-100 text-purple-700 p-3 rounded-full">
-                  <i data-lucide="activity" class="w-6 h-6"></i>
-                </div>
-                <h2
-                  class="text-base sm:text-lg font-semibold text-gray-800 group-hover:text-purple-700"
-                >
-                  Simulador riesgo - recompensa
-                </h2>
-              </div>
-              <p class="mt-3 text-gray-600 text-sm">
-                Compara el riesgo asumido frente a la posible ganancia. Evalúa
-                si la operación tiene una relación R:R favorable.
-              </p>
-            </a>
-          </main>
-        </div>
-      </div>
+      <!-- Usar componente home -->
+      <home-content></home-content>
 
       <!-- Usar componente footer -->
       <footer-component></footer-component>
     </div>
 
+    <!-- Importar componentes -->
+    <script src="components/NavHeader.js"></script>
+    <script src="components/FooterComponent.js"></script>
+    <script src="components/LoteCalculator.js"></script>
+    <script src="components/GananciaCalculator.js"></script>
+    <script src="components/BreakevenCalculator.js"></script>
+    <script src="components/SimuladorCalculator.js"></script>
+    <script src="components/HomeContent.js"></script>
+
     <script>
       const { createApp } = Vue;
-
       createApp({
         components: {
           "nav-header": NavHeader,
           "footer-component": FooterComponent,
+          "home-content": HomeContent,
+          "ganancia-calculator": GananciaCalculator,
+          "lote-calculator": LoteCalculator,
+          "breakeven-calculator": BreakevenCalculator,
+          "simulador-calculator": SimuladorCalculator,
         },
       }).mount("#app");
-
-      lucide.createIcons();
     </script>
   </body>
 </html>
