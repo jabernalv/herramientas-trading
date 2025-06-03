@@ -12,13 +12,28 @@ Este repositorio reúne una colección de herramientas diseñadas para **traders
   - Ayuda contextual integrada
   - Persistencia de últimos valores usados
 
+- **💰 Calculadora de ganancia:**  
+  Calcula la ganancia o pérdida potencial de una operación.
+
+  - Soporte para operaciones long y short
+  - Cálculo preciso según el tipo de operación
+  - Consideración del apalancamiento
+  - Resultados en tiempo real
+
+- **⚖️ Calculadora de break-even:**  
+  Determina el punto de equilibrio para mover el stop loss.
+
+  - Cálculo basado en el porcentaje de recorrido
+  - Validación según dirección de la operación
+  - Recomendaciones de gestión
+  - Interfaz intuitiva
+
 - **📊 Simulador de riesgo-recompensa:**  
   Analiza y valida operaciones según su relación riesgo-recompensa.
   - Soporte para operaciones long y short
   - Validación según dirección de la operación
   - Cálculo automático de relación R:R
   - Recomendaciones según la relación obtenida
-  - Historial de últimas 10 simulaciones
   - Sistema de notificaciones integrado
 
 ## 🎯 Enfoque
@@ -28,31 +43,44 @@ Fueron diseñadas con una sola idea en mente:
 
 > 💡 _La precisión no es opcional cuando tu dinero está en juego._
 
-Cada herramienta está desarrollada con **Vue 3 + TailwindCSS**, es completamente autoejecutable en HTML y puede integrarse fácilmente en cualquier entorno o academia de formación.
+Cada herramienta está desarrollada con **Vue 3 + TailwindCSS**, utiliza una arquitectura basada en componentes y puede integrarse fácilmente en cualquier entorno o academia de formación.
 
-## 📚 Uso
+## 🛠️ Tecnologías utilizadas
 
-Puedes abrir directamente los archivos `.html` en tu navegador. No requieren backend, no almacenan datos en servidores externos, y funcionan offline. Los datos se guardan localmente en tu navegador usando localStorage.
+- Vue 3 (CDN)
+- TailwindCSS (CDN)
+- MathJax para renderizado de fórmulas matemáticas
+- Lucide Icons para iconografía
+- LocalStorage para persistencia de datos
 
 ## 📦 Estructura del repositorio
 
 ```
 herramientas-trading/
-├── index.html                 # Página de inicio
-├── lote.html                  # Calculadora de tamaño de lote
-├── simulador.html             # Simulador de riesgo-recompensa
-├── components/                # Componentes Vue reutilizables
-│   ├── NavHeader.js           # Barra de navegación
-│   └── FooterComponent.js     # Pie de página
-└── README.md
+├── index.html                    # Aplicación principal
+├── components/                   # Componentes Vue
+│   ├── NavHeader.js             # Barra de navegación
+│   ├── FooterComponent.js       # Pie de página
+│   ├── HomeContent.js           # Contenido principal y router
+│   ├── LoteCalculator.js        # Calculadora de lote
+│   ├── GananciaCalculator.js    # Calculadora de ganancia
+│   ├── BreakevenCalculator.js   # Calculadora de break-even
+│   └── SimuladorCalculator.js   # Simulador R:R
+└── assets/                      # Recursos estáticos
+    └── trading_tools.svg        # Logo de la aplicación
 ```
 
-## 🧩 Próximas herramientas
+## 🚀 Instalación y uso
 
-- Calculadora de break-even
-- Simulador de riesgo-recompensa
+1. Clona este repositorio:
 
----
+   ```bash
+   git clone https://github.com/jabernalv/herramientas-trading.git
+   ```
+
+2. Abre `index.html` en tu navegador o sirve los archivos a través de un servidor web.
+
+3. No requiere instalación de dependencias ni configuración adicional.
 
 ## 👨‍💻 Autor
 
