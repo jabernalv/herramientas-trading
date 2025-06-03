@@ -15,11 +15,11 @@
 
       <!-- Par -->
       <div class="mb-4 relative">
-        <label class="block font-semibold mb-1">Par de divisas o activo</label>
+        <label class="block font-semibold mb-1" for="pair">Par de divisas o activo</label>
         <span class="absolute left-3 top-10 text-gray-500">
           <i data-lucide="globe" class="w-4 h-4"></i>
         </span>
-        <select v-model="pair" @focus="setAyuda('pair')" class="w-full pl-10 border border-gray-300 rounded p-2">
+        <select v-model="pair" @focus="setAyuda('pair')" class="w-full pl-10 border border-gray-300 rounded p-2" id="pair" aria-label="Par de divisas o activo">
           <option disabled value="">-- Selecciona un par --</option>
           <option v-for="(info, key) in pipTable" :key="key" :value="key">{{ key }}</option>
         </select>
@@ -28,29 +28,40 @@
       <!-- Inputs -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div class="relative">
-          <label class="block font-semibold mb-1">Tamaño del lote</label>
+          <label class="block font-semibold mb-1" for="lote">Tamaño del lote</label>
           <span class="absolute left-3 top-10 text-gray-500">
             <i data-lucide="layers" class="w-4 h-4"></i>
           </span>
-          <input v-model.number="lote" @focus="setAyuda('lote')" type="number" step="0.01"
-            class="w-full text-right pl-10 border border-gray-300 rounded p-2">
+          <input v-model.number="lote" @focus="setAyuda('lote')" type="number" step="0.01" min="0.01" max="1000"
+            class="w-full text-right pl-10 border border-gray-300 rounded p-2"
+            id="lote" aria-label="Tamaño del lote"
+            @input="limitDecimals('lote', 2)">
         </div>
         <div class="relative">
-          <label class="block font-semibold mb-1">Spread (en pips)</label>
+          <label class="block font-semibold mb-1" for="spread">Spread (en pips)</label>
           <span class="absolute left-3 top-10 text-gray-500">
             <i data-lucide="move-horizontal" class="w-4 h-4"></i>
           </span>
-          <input v-model.number="spread" @focus="setAyuda('spread')" type="number" step="0.01"
-            class="w-full text-right pl-10 border border-gray-300 rounded p-2">
+          <input v-model.number="spread" @focus="setAyuda('spread')" type="number" step="0.01" min="0" max="1000"
+            class="w-full text-right pl-10 border border-gray-300 rounded p-2"
+            id="spread" aria-label="Spread (en pips)"
+            @input="limitDecimals('spread', 2)">
         </div>
         <div class="relative">
-          <label class="block font-semibold mb-1">Comisión (USD)</label>
+          <label class="block font-semibold mb-1" for="comision">Comisión (USD)</label>
           <span class="absolute left-3 top-10 text-gray-500">
             <i data-lucide="file-cash" class="w-4 h-4"></i>
           </span>
-          <input v-model.number="comision" @focus="setAyuda('comision')" type="number" step="0.01"
-            class="w-full text-right pl-10 border border-gray-300 rounded p-2">
+          <input v-model.number="comision" @focus="setAyuda('comision')" type="number" step="0.01" min="0" max="10000"
+            class="w-full text-right pl-10 border border-gray-300 rounded p-2"
+            id="comision" aria-label="Comisión (USD)"
+            @input="limitDecimals('comision', 2)">
         </div>
+      </div>
+
+      <!-- Mensaje de error -->
+      <div v-if="error" class="text-red-600 bg-red-100 border border-red-300 p-3 rounded mb-4">
+        {{ error }}
       </div>
 
       <!-- Botón -->
@@ -90,6 +101,7 @@
           comision: 0,
           ayudaActiva: '',
           resultado: null,
+          error: '',
           pipTable: {
             EURUSD: { valorPip: 10 },
             GBPUSD: { valorPip: 10 },
@@ -116,14 +128,41 @@
         setAyuda(id) {
           this.ayudaActiva = id;
         },
+        limitDecimals(field, decimals) {
+          if (this[field] !== null && this[field] !== undefined) {
+            const value = this[field].toString();
+            if (value.includes('.')) {
+              const [intPart, decPart] = value.split('.');
+              this[field] = Number(intPart + '.' + decPart.slice(0, decimals));
+            }
+          }
+        },
         calcularBreakEven() {
-          if (!this.pair || !this.lote || this.spread === null) {
-            alert('Completa al menos par, lote y spread.');
+          this.error = '';
+          this.resultado = null;
+
+          // Validación robusta
+          if (!this.pair) {
+            this.error = 'Selecciona un par de divisas o activo.';
             return;
           }
+          if (this.lote === null || isNaN(this.lote) || this.lote <= 0) {
+            this.error = 'El tamaño del lote debe ser mayor a 0.';
+            return;
+          }
+          if (this.spread === null || isNaN(this.spread) || this.spread < 0) {
+            this.error = 'El spread debe ser un número igual o mayor a 0.';
+            return;
+          }
+          if (this.comision === null || isNaN(this.comision) || this.comision < 0) {
+            this.error = 'La comisión debe ser un número igual o mayor a 0.';
+            return;
+          }
+
           const pipValue = this.pipTable[this.pair].valorPip;
           const costoTotal = (this.spread * pipValue * this.lote) + Number(this.comision);
           const pipsEquivalente = costoTotal / (pipValue * this.lote);
+
           this.resultado = {
             pips: pipsEquivalente,
             usd: costoTotal
