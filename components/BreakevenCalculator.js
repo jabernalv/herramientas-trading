@@ -22,8 +22,8 @@ const BreakevenCalculator = {
               aria-label="Par de divisas o activo"
             >
               <option disabled value="">-- Selecciona un par --</option>
-              <option v-for="(info, key) in pipTable" :key="key" :value="key">
-                {{ key }}
+              <option v-for="(info, symbol) in tradingPairs" :key="symbol" :value="symbol">
+                {{ symbol }} - {{ info.nombre }}
               </option>
             </select>
           </div>
@@ -69,7 +69,7 @@ const BreakevenCalculator = {
             <div class="relative">
               <label class="block font-semibold mb-1" for="comision">Comisión (USD)</label>
               <span class="absolute left-3 top-10 text-gray-500">
-                <i data-lucide="file-cash" class="w-4 h-4"></i>
+                <i data-lucide="dollar-sign" class="w-4 h-4"></i>
               </span>
               <input
                 v-model.number="comision"
@@ -126,6 +126,20 @@ const BreakevenCalculator = {
               </p>
             </div>
           </div>
+
+          <!-- Información del par -->
+          <div v-if="pair && tradingPairs[pair]" class="text-sm bg-blue-50 border border-blue-200 p-4 rounded">
+            <h3 class="font-semibold mb-2">{{ tradingPairs[pair].nombre }}</h3>
+            <p class="text-gray-600">{{ tradingPairs[pair].descripcion }}</p>
+            <div class="mt-2 grid grid-cols-2 gap-2">
+              <div>
+                <strong>Valor del pip:</strong> \${{ tradingPairs[pair].valorPip }}
+              </div>
+              <div>
+                <strong>Unidades por lote:</strong> {{ tradingPairs[pair].unidades.toLocaleString() }}
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Ayuda contextual -->
@@ -148,20 +162,7 @@ const BreakevenCalculator = {
       ayudaActiva: "",
       resultado: null,
       error: "",
-      pipTable: {
-        EURUSD: { valorPip: 10 },
-        GBPUSD: { valorPip: 10 },
-        USDJPY: { valorPip: 9.13 },
-        GBPJPY: { valorPip: 9.13 },
-        AUDUSD: { valorPip: 10 },
-        NZDUSD: { valorPip: 10 },
-        USDCHF: { valorPip: 10 },
-        USDCAD: { valorPip: 10 },
-        XAUUSD: { valorPip: 1 },
-        XAGUSD: { valorPip: 5 },
-        XAUEUR: { valorPip: 1 },
-        XAGEUR: { valorPip: 5 },
-      },
+      tradingPairs: window.tradingPairs,
       ayudas: {
         pair: "Selecciona el par que vas a operar. El valor del pip por lote depende del activo: no es lo mismo operar EUR/USD que oro o plata.",
         lote: "El tamaño del lote determina la exposición de tu operación. Más lote implica mayor impacto del spread y de cualquier comisión.",
@@ -171,7 +172,7 @@ const BreakevenCalculator = {
           "Algunos brókers cobran una comisión fija por abrir y cerrar operaciones, adicional al spread. Aquí puedes incluirla si aplica.",
         result: `<div class='space-y-4'>
           <p>El break-even se calcula usando la siguiente fórmula:</p>
-          <div class='text-center'>$$BE = \\frac{S \\times VP \\times L + C}{VP \\times L}$$</div>
+          <div class='text-center'>$$BE = \\dfrac{S \\times VP \\times L + C}{VP \\times L}$$</div>
           <div class='space-y-1'>
             <p>Donde:</p>
             <div class='ml-4'>• $BE$: Break-even en pips</div>
@@ -196,10 +197,10 @@ const BreakevenCalculator = {
     calculoHTML() {
       if (!this.resultado) return "";
 
-      return `$$BE = \\frac{${this.spread} \\times ${
-        this.pipTable[this.pair].valorPip
+      return `$$BE = \\dfrac{${this.spread} \\times ${
+        this.tradingPairs[this.pair].valorPip
       } \\times ${this.lote} + ${this.comision}}{${
-        this.pipTable[this.pair].valorPip
+        this.tradingPairs[this.pair].valorPip
       } \\times ${this.lote}} = ${this.resultado.pips.toFixed(
         2
       )}\\text{ pips}$$`;
@@ -251,59 +252,48 @@ const BreakevenCalculator = {
         return;
       }
       if (this.spread === null || isNaN(this.spread) || this.spread < 0) {
-        this.error = "El spread debe ser un número igual o mayor a 0.";
+        this.error = "El spread debe ser 0 o mayor.";
         return;
       }
       if (this.comision === null || isNaN(this.comision) || this.comision < 0) {
-        this.error = "La comisión debe ser un número igual o mayor a 0.";
+        this.error = "La comisión debe ser 0 o mayor.";
         return;
       }
 
-      const pipValue = this.pipTable[this.pair].valorPip;
-      const costoTotal =
-        this.spread * pipValue * this.lote + Number(this.comision);
-      const pipsEquivalente = costoTotal / (pipValue * this.lote);
+      // Cálculo del break-even
+      const pipValue = this.tradingPairs[this.pair].valorPip;
+      const spreadCost = this.spread * pipValue * this.lote;
+      const totalCost = spreadCost + this.comision;
+      const pipsToBreakeven = totalCost / (pipValue * this.lote);
 
       this.resultado = {
-        pips: pipsEquivalente,
-        usd: costoTotal,
+        pips: pipsToBreakeven,
+        usd: totalCost,
       };
 
       this.setAyuda("result");
-      this.$nextTick(() => {
-        if (window.MathJax) {
-          window.MathJax.typesetPromise && window.MathJax.typesetPromise();
-        }
-      });
     },
     loadLocalStorage() {
-      // Cargar valores de entrada
       const lastPair = localStorage.getItem("breakeven_lastPair");
       const lastLote = localStorage.getItem("breakeven_lastLote");
       const lastSpread = localStorage.getItem("breakeven_lastSpread");
       const lastComision = localStorage.getItem("breakeven_lastComision");
       const lastResultado = localStorage.getItem("breakeven_lastResultado");
 
-      // Asignar valores si existen
-      if (lastPair && this.pipTable[lastPair]) this.pair = lastPair;
+      if (lastPair) this.pair = lastPair;
       if (lastLote) this.lote = Number(lastLote);
       if (lastSpread) this.spread = Number(lastSpread);
       if (lastComision) this.comision = Number(lastComision);
-      if (lastResultado) {
-        try {
-          this.resultado = JSON.parse(lastResultado);
-        } catch (e) {
-          console.warn("Error parsing last result from localStorage");
-        }
-      }
+      if (lastResultado) this.resultado = JSON.parse(lastResultado);
     },
   },
   mounted() {
     this.loadLocalStorage();
-    lucide.createIcons();
   },
   updated() {
-    lucide.createIcons();
+    if (window.MathJax) {
+      window.MathJax.typeset();
+    }
   },
 };
 
