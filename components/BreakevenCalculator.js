@@ -110,24 +110,28 @@ const BreakevenCalculator = {
             v-if="resultado"
             class="text-sm bg-gray-100 border border-gray-300 p-4 rounded mb-6"
           >
-            <p>
-              <strong>Break-even en pips:</strong> <span v-text="resultado.pips.toFixed(2)"></span>
-            </p>
-            <p>
-              <strong>Valor equivalente en USD:</strong> $<span v-text="resultado.usd.toFixed(2)"></span>
-            </p>
-            <p class="mt-2">
-              Para cubrir el costo operativo de esta operación, el precio debe moverse al menos
-              <strong><span v-text="resultado.pips.toFixed(2)"></span> pips</strong> a tu favor, lo que representa
-              <strong>$<span v-text="resultado.usd.toFixed(2)"></span></strong> considerando spread y comisiones.
-            </p>
+            <div class="text-center mb-4" v-html="calculoHTML"></div>
+            
+            <div class="p-3 bg-white rounded border border-gray-200">
+              <p>
+                <strong>Break-even en pips:</strong> <span v-text="resultado.pips.toFixed(2)"></span>
+              </p>
+              <p>
+                <strong>Valor equivalente en USD:</strong> $<span v-text="resultado.usd.toFixed(2)"></span>
+              </p>
+              <p class="mt-2">
+                Para cubrir el costo operativo de esta operación, el precio debe moverse al menos
+                <strong><span v-text="resultado.pips.toFixed(2)"></span> pips</strong> a tu favor, lo que representa
+                <strong>$<span v-text="resultado.usd.toFixed(2)"></span></strong> considerando spread y comisiones.
+              </p>
+            </div>
           </div>
         </div>
 
         <!-- Ayuda contextual -->
         <div class="bg-gray-100 border border-gray-300 p-4 rounded text-sm leading-relaxed">
           <h2 class="font-bold text-lg mb-2">Ayuda contextual</h2>
-          <p v-if="ayudaActiva">{{ ayudas[ayudaActiva] }}</p>
+          <div v-if="ayudaActiva" v-html="ayudas[ayudaActiva]"></div>
           <p v-else class="text-gray-500">
             Enfoca un campo para ver la explicación.
           </p>
@@ -165,8 +169,60 @@ const BreakevenCalculator = {
           "El spread es la diferencia entre el precio de compra y el de venta. Es un costo implícito que el mercado cobra desde que abres la operación.",
         comision:
           "Algunos brókers cobran una comisión fija por abrir y cerrar operaciones, adicional al spread. Aquí puedes incluirla si aplica.",
+        result: `<div class='space-y-4'>
+          <p>El break-even se calcula usando la siguiente fórmula:</p>
+          <div class='text-center'>$$BE = \\frac{S \\times VP \\times L + C}{VP \\times L}$$</div>
+          <div class='space-y-1'>
+            <p>Donde:</p>
+            <div class='ml-4'>• $BE$: Break-even en pips</div>
+            <div class='ml-4'>• $S$: Spread en pips</div>
+            <div class='ml-4'>• $C$: Comisión en USD</div>
+            <div class='ml-4'>• $VP$: Valor del pip</div>
+            <div class='ml-4'>• $L$: Tamaño del lote</div>
+          </div>
+          <p>Esta fórmula considera todos los costos operativos:</p>
+          <div class='ml-4'>
+            <div>1. El spread que cobra el mercado</div>
+            <div>2. Las comisiones del bróker</div>
+            <div>3. El valor del pip según el activo</div>
+            <div>4. El tamaño de la posición (lote)</div>
+          </div>
+          <p>El resultado te indica cuántos pips debe moverse el precio a tu favor solo para cubrir los costos.</p>
+        </div>`,
       },
     };
+  },
+  computed: {
+    calculoHTML() {
+      if (!this.resultado) return "";
+
+      return `$$BE = \\frac{${this.spread} \\times ${
+        this.pipTable[this.pair].valorPip
+      } \\times ${this.lote} + ${this.comision}}{${
+        this.pipTable[this.pair].valorPip
+      } \\times ${this.lote}} = ${this.resultado.pips.toFixed(
+        2
+      )}\\text{ pips}$$`;
+    },
+  },
+  watch: {
+    pair(newVal) {
+      localStorage.setItem("breakeven_lastPair", newVal || "");
+    },
+    lote(newVal) {
+      localStorage.setItem("breakeven_lastLote", newVal || "");
+    },
+    spread(newVal) {
+      localStorage.setItem("breakeven_lastSpread", newVal || "");
+    },
+    comision(newVal) {
+      localStorage.setItem("breakeven_lastComision", newVal || "");
+    },
+    resultado(newVal) {
+      if (newVal) {
+        localStorage.setItem("breakeven_lastResultado", JSON.stringify(newVal));
+      }
+    },
   },
   methods: {
     setAyuda(id) {
@@ -212,9 +268,38 @@ const BreakevenCalculator = {
         pips: pipsEquivalente,
         usd: costoTotal,
       };
+
+      this.setAyuda("result");
+      this.$nextTick(() => {
+        if (window.MathJax) {
+          window.MathJax.typesetPromise && window.MathJax.typesetPromise();
+        }
+      });
+    },
+    loadLocalStorage() {
+      // Cargar valores de entrada
+      const lastPair = localStorage.getItem("breakeven_lastPair");
+      const lastLote = localStorage.getItem("breakeven_lastLote");
+      const lastSpread = localStorage.getItem("breakeven_lastSpread");
+      const lastComision = localStorage.getItem("breakeven_lastComision");
+      const lastResultado = localStorage.getItem("breakeven_lastResultado");
+
+      // Asignar valores si existen
+      if (lastPair && this.pipTable[lastPair]) this.pair = lastPair;
+      if (lastLote) this.lote = Number(lastLote);
+      if (lastSpread) this.spread = Number(lastSpread);
+      if (lastComision) this.comision = Number(lastComision);
+      if (lastResultado) {
+        try {
+          this.resultado = JSON.parse(lastResultado);
+        } catch (e) {
+          console.warn("Error parsing last result from localStorage");
+        }
+      }
     },
   },
   mounted() {
+    this.loadLocalStorage();
     lucide.createIcons();
   },
   updated() {

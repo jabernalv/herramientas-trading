@@ -215,21 +215,25 @@ const SimuladorCalculator = {
             v-if="resultado"
             class="text-sm bg-gray-100 border border-gray-300 p-4 rounded mb-6"
           >
-            <p>
-              <strong>Riesgo:</strong>
-              <span v-text="resultado.pipsRiesgo.toFixed(2) + ' pips → $' + resultado.riesgoUSD.toFixed(2)"></span>
-            </p>
-            <p>
-              <strong>Recompensa:</strong>
-              <span v-text="resultado.pipsRecompensa.toFixed(2) + ' pips → $' + resultado.gananciaUSD.toFixed(2)"></span>
-            </p>
-            <p>
-              <strong>Relación R:R:</strong>
-              <span v-text="resultado.relacion.toFixed(2)"></span>
-            </p>
-            <p class="mt-2 font-medium" :class="resultado.colorClass">
-              {{ resultado.recomendacion }}
-            </p>
+            <div class="text-center mb-4" v-html="calculoHTML"></div>
+            
+            <div class="p-3 bg-white rounded border border-gray-200">
+              <p>
+                <strong>Riesgo:</strong>
+                <span v-text="resultado.pipsRiesgo.toFixed(2) + ' pips → $' + resultado.riesgoUSD.toFixed(2)"></span>
+              </p>
+              <p>
+                <strong>Recompensa:</strong>
+                <span v-text="resultado.pipsRecompensa.toFixed(2) + ' pips → $' + resultado.gananciaUSD.toFixed(2)"></span>
+              </p>
+              <p>
+                <strong>Relación R:R:</strong>
+                <span v-text="resultado.relacion.toFixed(2)"></span>
+              </p>
+              <p class="mt-2 font-medium" :class="resultado.colorClass">
+                {{ resultado.recomendacion }}
+              </p>
+            </div>
           </div>
         </div>
 
@@ -238,7 +242,7 @@ const SimuladorCalculator = {
           class="bg-gray-100 border border-gray-300 p-4 rounded text-sm leading-relaxed"
         >
           <h2 class="font-bold text-lg mb-2">Ayuda contextual</h2>
-          <p v-if="ayudaActiva">{{ ayudas[ayudaActiva] }}</p>
+          <div v-if="ayudaActiva" v-html="ayudas[ayudaActiva]"></div>
           <p v-else class="text-gray-500">
             Enfoca un campo para ver la explicación.
           </p>
@@ -295,14 +299,51 @@ const SimuladorCalculator = {
         XAGEUR: { valorPip: 5, decimales: 3, min: 10, max: 50 },
       },
       ayudas: {
-        pair: "El par de divisas o activo que estás operando determina el valor del pip. Por ejemplo, un pip en EUR/USD vale $10 por lote estándar.",
+        pair: "Selecciona el par que vas a operar. El valor del pip por lote depende del activo: no es lo mismo operar EUR/USD que oro o plata.",
         direccion:
-          "En una compra (long) ganas si el precio sube y pierdes si baja. En una venta (short) ganas si el precio baja y pierdes si sube.",
-        lote: "Cuanto mayor el tamaño del lote, mayor será el impacto económico de los movimientos de precio. 1 lote estándar son 100.000 unidades (Forex).",
+          "Define si estás abriendo una posición de compra (long) o venta (short). En una compra, ganas si el precio sube; en una venta, ganas si el precio baja.",
+        lote: "El tamaño del lote determina la exposición de tu operación. Más lote implica mayor impacto del spread y de cualquier comisión.",
         entrada:
-          "El precio de entrada es el punto donde abrirías la operación. Desde aquí se calcula el riesgo y la recompensa.",
-        stop: "Es el precio al cual cerrarías la operación si sale mal. En compras debe estar por debajo de la entrada, en ventas por encima.",
-        take: "Es el precio al cual cerrarías la operación con ganancia. En compras debe estar por encima de la entrada, en ventas por debajo.",
+          "El precio al que planeas abrir la operación. Debe tener en cuenta los decimales correctos según el par.",
+        stop: "El precio donde colocarás tu stop loss. En una compra debe ser menor que la entrada, en una venta debe ser mayor.",
+        take: "El precio objetivo donde tomarás ganancias. En una compra debe ser mayor que la entrada, en una venta debe ser menor.",
+        result: `<div class='space-y-4'>
+          <p>El simulador calcula el riesgo y la recompensa usando las siguientes fórmulas:</p>
+          
+          <div class='space-y-2'>
+            <p>Para operaciones de compra (long):</p>
+            <div class='text-center'>
+              $$\\text{Pips Riesgo} = (PE - SL) \\times F$$
+              $$\\text{Pips Recompensa} = (TP - PE) \\times F$$
+            </div>
+            
+            <p>Para operaciones de venta (short):</p>
+            <div class='text-center'>
+              $$\\text{Pips Riesgo} = (SL - PE) \\times F$$
+              $$\\text{Pips Recompensa} = (PE - TP) \\times F$$
+            </div>
+            
+            <p>El valor monetario se calcula como:</p>
+            <div class='text-center'>
+              $$\\text{Valor USD} = \\text{Pips} \\times VP \\times L$$
+            </div>
+            
+            <p>La relación riesgo-recompensa (R:R) es:</p>
+            <div class='text-center'>
+              $$R:R = \\frac{\\text{Pips Recompensa}}{\\text{Pips Riesgo}}$$
+            </div>
+          </div>
+
+          <div class='space-y-1 mt-3'>
+            <p>Donde:</p>
+            <div class='ml-4'>• $PE$: Precio de entrada</div>
+            <div class='ml-4'>• $SL$: Stop loss</div>
+            <div class='ml-4'>• $TP$: Take profit</div>
+            <div class='ml-4'>• $F$: Factor de conversión a pips</div>
+            <div class='ml-4'>• $VP$: Valor del pip</div>
+            <div class='ml-4'>• $L$: Tamaño del lote</div>
+          </div>
+        </div>`,
       },
     };
   },
@@ -326,6 +367,48 @@ const SimuladorCalculator = {
       } catch (e) {
         return false;
       }
+    },
+    calculoHTML() {
+      if (!this.resultado) return "";
+
+      const operacion =
+        this.direccion === "compra"
+          ? `\\begin{align*}
+        \\text{Riesgo} &= (${this.entrada} - ${
+              this.stop
+            }) \\times F = ${this.resultado.pipsRiesgo.toFixed(
+              2
+            )}\\text{ pips} \\\\
+        \\text{Recompensa} &= (${this.take} - ${
+              this.entrada
+            }) \\times F = ${this.resultado.pipsRecompensa.toFixed(
+              2
+            )}\\text{ pips} \\\\
+        R:R &= \\frac{${this.resultado.pipsRecompensa.toFixed(
+          2
+        )}}{${this.resultado.pipsRiesgo.toFixed(
+              2
+            )}} = ${this.resultado.relacion.toFixed(2)}
+        \\end{align*}`
+          : `\\begin{align*}
+        \\text{Riesgo} &= (${this.stop} - ${
+              this.entrada
+            }) \\times F = ${this.resultado.pipsRiesgo.toFixed(
+              2
+            )}\\text{ pips} \\\\
+        \\text{Recompensa} &= (${this.entrada} - ${
+              this.take
+            }) \\times F = ${this.resultado.pipsRecompensa.toFixed(
+              2
+            )}\\text{ pips} \\\\
+        R:R &= \\frac{${this.resultado.pipsRecompensa.toFixed(
+          2
+        )}}{${this.resultado.pipsRiesgo.toFixed(
+              2
+            )}} = ${this.resultado.relacion.toFixed(2)}
+        \\end{align*}`;
+
+      return operacion;
     },
   },
   methods: {
@@ -488,6 +571,13 @@ const SimuladorCalculator = {
         colorClass,
         direccion: this.direccion,
       };
+
+      this.setAyuda("result");
+      this.$nextTick(() => {
+        if (window.MathJax) {
+          window.MathJax.typesetPromise && window.MathJax.typesetPromise();
+        }
+      });
 
       // Mostrar notificación de éxito
       this.showNotification(

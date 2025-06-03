@@ -146,31 +146,55 @@ const GananciaCalculator = {
           </div>
 
           <!-- Resultados -->
-          <div
-            v-if="resultado"
-            class="text-sm bg-gray-100 border border-gray-300 p-4 rounded mb-6"
-          >
-            <p>
-              <strong>Diferencia:</strong> <span v-text="resultado.diferenciaPips.toFixed(2)"></span> pips
-            </p>
-            <p>
-              <strong>Ganancia / pérdida:</strong> $<span v-text="resultado.ganancia.toFixed(2)"></span>
-            </p>
-            <p>
-              <strong>Margen requerido:</strong> $<span v-text="resultado.margen.toFixed(2)"></span>
-            </p>
-            <p>
-              <strong>Rentabilidad sobre el margen:</strong> <span v-text="resultado.rentabilidad.toFixed(2)"></span>%
-            </p>
-            <p class="mt-3">
-              Con este apalancamiento, esta operación requeriría un margen de
-              <strong>$<span v-text="resultado.margen.toFixed(2)"></span></strong>, y habría
-              generado una ganancia de
-              <strong>$<span v-text="resultado.ganancia.toFixed(2)"></span></strong>, lo que
-              equivale al
-              <strong><span v-text="resultado.rentabilidad.toFixed(2)"></span>%</strong> sobre
-              el capital inmovilizado.
-            </p>
+          <div v-if="resultado" class="text-center mb-6">
+            <div class="inline-flex flex-col items-center justify-center px-6 py-4 rounded-lg bg-green-100 border border-green-300 shadow-md animate-fade-in">
+              <div class="flex items-center gap-2 mb-2">
+                <i data-lucide="check-circle" class="w-6 h-6 text-green-600"></i>
+                <span class="text-lg font-semibold">Resultado del cálculo:</span>
+              </div>
+              <p class="text-3xl text-green-700 font-extrabold tracking-wide">
+                \${{ resultado.ganancia.toFixed(2) }}
+              </p>
+            </div>
+
+            <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200 animate-fade-in">
+              <p class="text-sm text-blue-800 mb-2">Fórmula aplicada:</p>
+              <div class="text-center" v-html="formulaHTML"></div>
+              <div class="mt-3 text-sm text-blue-600">
+                <div>Donde:</div>
+                <div>Diferencia = {{ tipoOperacion === 'compra' ? 'Precio salida - Precio entrada' : 'Precio entrada - Precio salida' }}</div>
+                <div>Precio entrada = {{ precioEntrada }}</div>
+                <div>Precio salida = {{ precioSalida }}</div>
+                <div>Lote = {{ lote }}</div>
+                <div>Valor del pip = \${{ pipTable[pair].valorPip }}</div>
+                <div>Unidades = {{ pipTable[pair].unidades.toLocaleString() }}</div>
+              </div>
+            </div>
+
+            <div class="mt-4 p-4 bg-gray-100 border border-gray-300 rounded text-sm">
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <strong>Diferencia:</strong> {{ resultado.diferenciaPips.toFixed(2) }} pips
+                </div>
+                <div>
+                  <strong>Margen requerido:</strong> \${{ resultado.margen.toFixed(2) }}
+                </div>
+                <div>
+                  <strong>Ganancia/pérdida:</strong> \${{ resultado.ganancia.toFixed(2) }}
+                </div>
+                <div>
+                  <strong>Rentabilidad:</strong> {{ resultado.rentabilidad.toFixed(2) }}%
+                </div>
+              </div>
+              <p class="mt-3">
+                Con este apalancamiento, esta operación requeriría un margen de
+                <strong>\${{ resultado.margen.toFixed(2) }}</strong>, y habría
+                generado una {{ resultado.ganancia >= 0 ? 'ganancia' : 'pérdida' }} de
+                <strong>\${{ Math.abs(resultado.ganancia).toFixed(2) }}</strong>, lo que
+                equivale al <strong>{{ resultado.rentabilidad.toFixed(2) }}%</strong> sobre
+                el capital inmovilizado.
+              </p>
+            </div>
           </div>
 
           <!-- Tabla de valores pip por par -->
@@ -206,7 +230,7 @@ const GananciaCalculator = {
         <!-- Ayuda contextual -->
         <div class="bg-gray-100 border border-gray-300 p-4 rounded text-sm leading-relaxed">
           <h2 class="font-bold text-lg mb-2">Ayuda contextual</h2>
-          <p v-if="ayudaActiva">{{ ayudas[ayudaActiva] }}</p>
+          <p v-if="ayudaActiva" v-html="ayudas[ayudaActiva]"></p>
           <p v-else class="text-gray-500">
             Pasa el cursor o enfoca un campo para ver la explicación.
           </p>
@@ -262,16 +286,18 @@ const GananciaCalculator = {
         XAGEUR: { min: 10, max: 50 },
       },
       ayudas: {
-        pair: "En trading, el par seleccionado determina qué instrumento estás operando. El valor del pip y el tamaño del contrato dependen del activo. En metales como XAU/USD y XAG/USD, los lotes son más pequeños en unidades, pero el impacto económico puede ser alto. Elegir bien el par es clave para controlar el riesgo.",
+        pair: "En trading, un par de divisas representa la relación entre dos monedas: una que se compra y otra que se vende. Por ejemplo, en EUR/USD, compras euros vendiendo dólares. Cada par tiene características propias como el valor del pip y las unidades por lote estándar.",
         tipoOperacion:
-          'Una operación de tipo "compra" (long) gana si el precio sube; una "venta" (short) gana si el precio baja. El tipo de operación determina cómo se interpreta la diferencia entre precio de entrada y de salida.',
+          "Define si estás abriendo una posición de compra (long) o venta (short). En una compra, ganas si el precio sube; en una venta, ganas si el precio baja.",
         precioEntrada:
-          "Es el punto inicial desde el cual calculas la ganancia o pérdida. Un cambio pequeño puede representar muchos dólares si el lote o apalancamiento es grande.",
+          "El precio al que abres la operación. Debe tener en cuenta los decimales correctos según el par.",
         precioSalida:
-          "Es el punto final de la operación. Comparado con el precio de entrada, determina la diferencia en pips y, por tanto, el resultado financiero.",
-        lote: "El tamaño del lote escala directamente la ganancia o pérdida. En Forex 1 lote son 100.000 unidades; en oro 100 onzas; en plata 5.000. Más lote implica mayor exposición.",
+          "El precio al que cierras o planeas cerrar la operación. La diferencia con el precio de entrada determinará tu ganancia o pérdida.",
+        lote: "El tamaño de tu posición en lotes. Un lote estándar representa diferentes cantidades según el instrumento (100,000 unidades para forex, 100 oz para oro, etc).",
         apalancamiento:
-          "El apalancamiento se expresa como una ratio (por ejemplo, 100:1 significa que por cada $1 de tu capital puedes operar $100). A mayor apalancamiento, menor el margen requerido pero mayor el riesgo. Por ejemplo, con 100:1 necesitarías $1,000 de margen para operar $100,000.",
+          "El apalancamiento determina cuánto margen necesitas para abrir la operación. Por ejemplo, 100:1 significa que necesitas $1 de margen por cada $100 de posición.",
+        result:
+          "La ganancia o pérdida se calcula usando la siguiente fórmula matemática:<div><br>Para operaciones de compra (long):<br>$$G = (PS - PE) \\times L \\times U$$<br><br>Para operaciones de venta (short):<br>$$G = (PE - PS) \\times L \\times U$$<br><br>El margen requerido se calcula como:<br>$$\\text{Margen} = \\dfrac{PE \\times L \\times U}{A}$$</div><br><br>Donde:<div class='list-disc pl-4'><div class='mb-1'>• $G$: Ganancia o pérdida</div><div class='mb-1'>• $PS$: Precio de salida</div><div class='mb-1'>• $PE$: Precio de entrada</div><div class='mb-1'>• $L$: Lote</div><div class='mb-1'>• $U$: Unidades</div><div class='mb-1'>• $A$: Apalancamiento</div></div>",
       },
     };
   },
@@ -287,6 +313,47 @@ const GananciaCalculator = {
     },
     rentabilidadFormatted() {
       return this.resultado?.rentabilidad?.toFixed(2) || "0.00";
+    },
+    formulaHTML() {
+      if (!this.resultado) return "";
+      const operacion =
+        this.tipoOperacion === "compra"
+          ? `(${this.precioSalida} - ${this.precioEntrada})`
+          : `(${this.precioEntrada} - ${this.precioSalida})`;
+
+      return `$$\\text{Ganancia} = ${operacion} \\times ${this.lote} \\times ${
+        this.pipTable[this.pair].unidades
+      } = $${this.resultado.ganancia.toFixed(2)}$$`;
+    },
+    isFormValid() {
+      return (
+        this.pair && this.precioEntrada && this.precioSalida && this.lote > 0
+      );
+    },
+  },
+  watch: {
+    pair(newVal) {
+      localStorage.setItem("ganancia_lastPair", newVal || "");
+    },
+    tipoOperacion(newVal) {
+      localStorage.setItem("ganancia_lastTipoOperacion", newVal || "");
+    },
+    precioEntrada(newVal) {
+      localStorage.setItem("ganancia_lastPrecioEntrada", newVal || "");
+    },
+    precioSalida(newVal) {
+      localStorage.setItem("ganancia_lastPrecioSalida", newVal || "");
+    },
+    lote(newVal) {
+      localStorage.setItem("ganancia_lastLote", newVal || "");
+    },
+    apalancamiento(newVal) {
+      localStorage.setItem("ganancia_lastApalancamiento", newVal || "");
+    },
+    resultado(newVal) {
+      if (newVal) {
+        localStorage.setItem("ganancia_lastResultado", JSON.stringify(newVal));
+      }
     },
   },
   methods: {
@@ -366,8 +433,17 @@ const GananciaCalculator = {
       return true;
     },
     handleClick() {
-      if (!this.validateInputs()) return;
-
+      if (this.validateInputs()) {
+        this.calculateResult();
+        this.setAyuda("result");
+        this.$nextTick(() => {
+          if (window.MathJax) {
+            window.MathJax.typesetPromise && window.MathJax.typesetPromise();
+          }
+        });
+      }
+    },
+    calculateResult() {
       const info = this.pipTable[this.pair];
       const diff = this.precioSalida - this.precioEntrada;
       const signo = this.tipoOperacion === "compra" ? 1 : -1;
@@ -396,8 +472,42 @@ const GananciaCalculator = {
     formatNumber(value) {
       return value ? value.toFixed(2) : "0.00";
     },
+    loadLocalStorage() {
+      // Cargar valores de entrada
+      const lastPair = localStorage.getItem("ganancia_lastPair");
+      const lastTipoOperacion = localStorage.getItem(
+        "ganancia_lastTipoOperacion"
+      );
+      const lastPrecioEntrada = localStorage.getItem(
+        "ganancia_lastPrecioEntrada"
+      );
+      const lastPrecioSalida = localStorage.getItem(
+        "ganancia_lastPrecioSalida"
+      );
+      const lastLote = localStorage.getItem("ganancia_lastLote");
+      const lastApalancamiento = localStorage.getItem(
+        "ganancia_lastApalancamiento"
+      );
+      const lastResultado = localStorage.getItem("ganancia_lastResultado");
+
+      // Asignar valores si existen
+      if (lastPair && this.pipTable[lastPair]) this.pair = lastPair;
+      if (lastTipoOperacion) this.tipoOperacion = lastTipoOperacion;
+      if (lastPrecioEntrada) this.precioEntrada = Number(lastPrecioEntrada);
+      if (lastPrecioSalida) this.precioSalida = Number(lastPrecioSalida);
+      if (lastLote) this.lote = Number(lastLote);
+      if (lastApalancamiento) this.apalancamiento = Number(lastApalancamiento);
+      if (lastResultado) {
+        try {
+          this.resultado = JSON.parse(lastResultado);
+        } catch (e) {
+          console.warn("Error parsing last result from localStorage");
+        }
+      }
+    },
   },
   mounted() {
+    this.loadLocalStorage();
     lucide.createIcons();
   },
   updated() {

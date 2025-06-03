@@ -117,11 +117,11 @@ const LoteCalculator = {
               <p class="text-sm text-blue-800 mb-2">Fórmula aplicada:</p>
               <div class="text-center" v-html="formulaHTML"></div>
               <div class="mt-3 text-sm text-blue-600">
-                Donde:<br>
-                Capital = \${{ accountSize }}<br>
-                Riesgo = {{ riskPercent }}%<br>
-                Stop Loss = {{ stopLossPips }} pips<br>
-                Valor del Pip = \${{ pipTable[pair] }}
+                <div>Donde:</div>
+                <div>Capital = \${{ accountSize }}</div>
+                <div>Riesgo = {{ riskPercent }}%</div>
+                <div>Stop Loss = {{ stopLossPips }} pips</div>
+                <div>Valor del Pip = \${{ pipTable[pair] }}</div>
               </div>
             </div>
           </div>
@@ -151,7 +151,7 @@ const LoteCalculator = {
 
         <div class="bg-gray-100 border border-gray-300 p-4 rounded text-sm leading-relaxed order-2 md:order-1">
           <h2 class="font-bold text-lg mb-2">Ayuda contextual</h2>
-          <p v-if="ayudaActiva">{{ ayudas[ayudaActiva] }}</p>
+          <p v-if="ayudaActiva" v-html="ayudas[ayudaActiva]"></p>
           <p v-else class="text-gray-500">
             Pasa el cursor o enfoca un campo para ver la explicación.
           </p>
@@ -192,7 +192,7 @@ const LoteCalculator = {
         pipTable:
           "El pip (Percentage in Point) es la unidad mínima de movimiento de precio en un par. El valor monetario del pip depende del par y del tamaño del lote. Por ejemplo, en EUR/USD 1 pip = $10 por lote estándar. Pero en XAU/USD o USD/JPY ese valor cambia. Conocer el valor del pip es fundamental para medir tu exposición real y ajustar el tamaño del lote para mantener el riesgo bajo control. La tabla te da valores aproximados usados por la mayoría de brókers.",
         result:
-          "El tamaño del lote es la cantidad de unidades de un par que vas a comprar o vender. Se calcula utilizando la siguiente fórmula matemática:\\n\\n$$\\text{Lote} = \\frac{\\text{Capital} \\times \\text{% Riesgo}}{\\text{Stop Loss} \\times \\text{Valor del Pip}}$$\\n\\nCada elemento de la fórmula tiene un propósito específico:\\n• Capital: Tu balance total disponible\\n• % Riesgo: El porcentaje que estás dispuesto a arriesgar\\n• Stop Loss: Tu nivel de salida en pips\\n• Valor del Pip: El valor monetario de cada pip según el par\\n\\nEsta fórmula asegura que tu riesgo monetario real coincida exactamente con el porcentaje que deseas arriesgar.",
+          "El tamaño del lote es la cantidad de unidades de un par que vas a comprar o vender. Se calcula utilizando la siguiente fórmula matemática:<br><br>$$\\text{Lote} = \\dfrac{\\text{Capital} \\times \\text{% Riesgo}}{\\text{Stop Loss} \\times \\text{Valor del Pip}}$$<br><br>Cada elemento de la fórmula tiene un propósito específico:<br>• Capital: Tu balance total disponible<br>• % Riesgo: El porcentaje que estás dispuesto a arriesgar<br>• Stop Loss: Tu nivel de salida en pips<br>• Valor del Pip: El valor monetario de cada pip según el par<br><br>Esta fórmula asegura que tu riesgo monetario real coincida exactamente con el porcentaje que deseas arriesgar.",
       },
     };
   },
@@ -211,7 +211,7 @@ const LoteCalculator = {
     },
     formulaHTML() {
       if (!this.lotSize) return "";
-      const formula = `$$\\text{Lote} = \\frac{${this.accountSize} \\times ${
+      const formula = `$$\\text{Lote} = \\dfrac{${this.accountSize} \\times ${
         this.riskPercent
       }\\%}{${this.stopLossPips} \\times ${
         this.pipTable[this.pair]
