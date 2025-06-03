@@ -6,11 +6,12 @@
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center px-4 py-10">
   <div id="app" class="bg-white shadow-md rounded p-6 max-w-5xl w-full grid grid-cols-1 md:grid-cols-3 gap-6">
     <!-- Columna principal -->
-    <div class="md:col-span-2">
+    <div class="md:col-span-2 order-1">
       <h1 class="text-2xl font-bold mb-6 text-center">Calculadora de Break-even</h1>
 
       <!-- Par -->
@@ -82,7 +83,7 @@
     </div>
 
     <!-- Ayuda contextual -->
-    <div class="bg-gray-100 border border-gray-300 p-4 rounded text-sm leading-relaxed">
+    <div class="bg-gray-100 border border-gray-300 p-4 rounded text-sm leading-relaxed order-2 md:order-1">
       <h2 class="font-bold text-lg mb-2">Ayuda contextual</h2>
       <p v-if="ayudaActiva">{{ ayudas[ayudaActiva] }}</p>
       <p v-else class="text-gray-500">Enfoca un campo para ver la explicación.</p>
