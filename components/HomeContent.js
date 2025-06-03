@@ -109,10 +109,7 @@ const HomeContent = {
       </div>
 
       <template v-else>
-        <nav-header @show-tool="showTool"></nav-header>
-        <div class="h-16"></div>
         <component :is="currentComponent"></component>
-        <footer-component></footer-component>
       </template>
     </div>
   `,
@@ -149,13 +146,25 @@ const HomeContent = {
         window.history.pushState({}, "", window.location.pathname);
       }
     },
+    handlePopState() {
+      const hash = window.location.hash.slice(1);
+      if (["lote", "ganancia", "breakeven", "simulador"].includes(hash)) {
+        this.currentTool = hash;
+      } else {
+        this.currentTool = null;
+      }
+    },
   },
   mounted() {
     const hash = window.location.hash.slice(1);
     if (["lote", "ganancia", "breakeven", "simulador"].includes(hash)) {
       this.currentTool = hash;
     }
+    window.addEventListener("popstate", this.handlePopState);
     lucide.createIcons();
+  },
+  beforeUnmount() {
+    window.removeEventListener("popstate", this.handlePopState);
   },
   updated() {
     lucide.createIcons();

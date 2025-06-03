@@ -51,13 +51,13 @@
   <body class="bg-gray-50 min-h-screen">
     <div id="app" class="pb-16">
       <!-- Usar componente nav -->
-      <nav-header></nav-header>
+      <nav-header @show-tool="$refs.homeContent.showTool($event)"></nav-header>
 
       <!-- Espaciador para compensar el nav fijo -->
       <div class="h-16"></div>
 
       <!-- Usar componente home -->
-      <home-content></home-content>
+      <home-content ref="homeContent"></home-content>
 
       <!-- Usar componente footer -->
       <footer-component></footer-component>
