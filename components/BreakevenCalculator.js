@@ -175,11 +175,11 @@ const BreakevenCalculator = {
           <div class='text-center'>$$BE = \\dfrac{S \\times VP \\times L + C}{VP \\times L}$$</div>
           <div class='space-y-1'>
             <p>Donde:</p>
-            <div class='ml-4'>• $BE$: Break-even en pips</div>
-            <div class='ml-4'>• $S$: Spread en pips</div>
-            <div class='ml-4'>• $C$: Comisión en USD</div>
-            <div class='ml-4'>• $VP$: Valor del pip</div>
-            <div class='ml-4'>• $L$: Tamaño del lote</div>
+            <div class='ml-4'>• <strong></i>BE</i></strong>: Break-even en pips</div>
+            <div class='ml-4'>• <strong></i>S</i></strong>: Spread en pips</div>
+            <div class='ml-4'>• <strong></i>C</i></strong>: Comisión en USD</div>
+            <div class='ml-4'>• <strong></i>VP</i></strong>: Valor del pip</div>
+            <div class='ml-4'>• <strong></i>L</i></strong>: Tamaño del lote</div>
           </div>
           <p>Esta fórmula considera todos los costos operativos:</p>
           <div class='ml-4'>

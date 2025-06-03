@@ -13,6 +13,7 @@ const NavHeader = {
               class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium inline-flex items-center"
               :class="{ 'text-white': isMenuOpen }"
             >
+              <i data-lucide="calculator" class="w-4 h-4 mr-1"></i>
               <span>Calculadoras</span>
               <i data-lucide="chevron-down" class="w-4 h-4 ml-1" :class="{ 'transform rotate-180': isMenuOpen }"></i>
             </button>
@@ -21,14 +22,33 @@ const NavHeader = {
               class="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5"
             >
               <div class="py-1">
-                <a href="#" @click.prevent="selectOption('lote')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Lote</a>
-                <a href="#" @click.prevent="selectOption('ganancia')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Ganancia</a>
-                <a href="#" @click.prevent="selectOption('breakeven')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Break-even</a>
-                <a href="#" @click.prevent="selectOption('simulador')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Simulador R:R</a>
+                <a href="#" @click.prevent="selectOption('lote')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2">
+                  <i data-lucide="layers" class="w-4 h-4"></i>
+                  Lote
+                </a>
+                <a href="#" @click.prevent="selectOption('ganancia')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2">
+                  <i data-lucide="trending-up" class="w-4 h-4"></i>
+                  Ganancia
+                </a>
+                <a href="#" @click.prevent="selectOption('breakeven')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2">
+                  <i data-lucide="equal" class="w-4 h-4"></i>
+                  Break-even
+                </a>
+                <a href="#" @click.prevent="selectOption('simulador')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2">
+                  <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                  Simulador R:R
+                </a>
+                <a href="#" @click.prevent="selectOption('margen')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2">
+                  <i data-lucide="percent" class="w-4 h-4"></i>
+                  Margen
+                </a>
               </div>
             </div>
           </div>
-          <a href="index.html" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Inicio</a>
+          <a href="index.html" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2">
+            <i data-lucide="home" class="w-4 h-4"></i>
+            Inicio
+          </a>
         </div>
       </div>
     </nav>

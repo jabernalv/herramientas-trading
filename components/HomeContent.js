@@ -103,6 +103,27 @@ const HomeContent = {
                   si la operación tiene una relación R:R favorable.
                 </p>
               </a>
+
+              <!-- Margen -->
+              <a
+                href="#"
+                @click.prevent="showTool('margen')"
+                class="group block border border-gray-200 rounded-lg p-5 sm:p-6 bg-white shadow hover:shadow-lg transition"
+              >
+                <div class="flex items-center gap-4">
+                  <div class="bg-indigo-100 text-indigo-700 p-3 rounded-full">
+                    <i data-lucide="scale" class="w-6 h-4"></i>
+                  </div>
+                  <h2
+                    class="text-base sm:text-lg font-semibold text-gray-800 group-hover:text-indigo-700"
+                  >
+                    Calculadora de margen requerido
+                  </h2>
+                </div>
+                <p class="mt-3 text-gray-600 text-sm">
+                  Calcula el margen necesario para abrir una posición según el tamaño del lote y el apalancamiento seleccionado.
+                </p>
+              </a>
             </div>
           </div>
         </div>
@@ -120,6 +141,7 @@ const HomeContent = {
     "ganancia-calculator": GananciaCalculator,
     "breakeven-calculator": BreakevenCalculator,
     "simulador-calculator": SimuladorCalculator,
+    "margen-calculator": MargenCalculator,
   },
   data() {
     return {
@@ -133,6 +155,7 @@ const HomeContent = {
         ganancia: "ganancia-calculator",
         breakeven: "breakeven-calculator",
         simulador: "simulador-calculator",
+        margen: "margen-calculator",
       };
       return components[this.currentTool] || null;
     },
@@ -148,7 +171,9 @@ const HomeContent = {
     },
     handlePopState() {
       const hash = window.location.hash.slice(1);
-      if (["lote", "ganancia", "breakeven", "simulador"].includes(hash)) {
+      if (
+        ["lote", "ganancia", "breakeven", "simulador", "margen"].includes(hash)
+      ) {
         this.currentTool = hash;
       } else {
         this.currentTool = null;
@@ -157,7 +182,9 @@ const HomeContent = {
   },
   mounted() {
     const hash = window.location.hash.slice(1);
-    if (["lote", "ganancia", "breakeven", "simulador"].includes(hash)) {
+    if (
+      ["lote", "ganancia", "breakeven", "simulador", "margen"].includes(hash)
+    ) {
       this.currentTool = hash;
     }
     window.addEventListener("popstate", this.handlePopState);

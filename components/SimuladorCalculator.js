@@ -57,17 +57,16 @@ const SimuladorCalculator = {
               <select
                 v-model="pair"
                 @focus="setAyuda('pair')"
-                @change="updateInputSteps"
                 class="w-full pl-10 border border-gray-300 rounded p-2"
                 :class="{'border-red-500': errors.pair}"
               >
                 <option disabled value="">-- Selecciona un par --</option>
                 <option
-                  v-for="(info, key) in pipTable"
-                  :key="key"
-                  :value="key"
+                  v-for="(info, symbol) in tradingPairs"
+                  :key="symbol"
+                  :value="symbol"
                 >
-                  {{ key }}
+                  {{ symbol }} - {{ info.nombre }}
                 </option>
               </select>
               <p v-if="errors.pair" class="text-red-500 text-xs mt-1">
@@ -191,48 +190,63 @@ const SimuladorCalculator = {
               <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
               Simular riesgo - recompensa
             </button>
-
-            <button
-              @click="cargarUltimaSimulacion"
-              v-if="haySimulacionGuardada"
-              class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 inline-flex items-center gap-2"
-            >
-              <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
-              Cargar última
-            </button>
-
-            <button
-              @click="limpiarFormulario"
-              class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 inline-flex items-center gap-2"
-            >
-              <i data-lucide="trash-2" class="w-4 h-4"></i>
-              Limpiar
-            </button>
           </div>
 
           <!-- Resultados -->
-          <div
-            v-if="resultado"
-            class="text-sm bg-gray-100 border border-gray-300 p-4 rounded mb-6"
-          >
-            <div class="text-center mb-4" v-html="calculoHTML"></div>
-            
-            <div class="p-3 bg-white rounded border border-gray-200">
-              <p>
-                <strong>Riesgo:</strong>
-                <span v-text="resultado.pipsRiesgo.toFixed(2) + ' pips → $' + resultado.riesgoUSD.toFixed(2)"></span>
+          <div v-if="resultado" class="text-center mb-6">
+            <div class="inline-flex flex-col items-center justify-center px-6 py-4 rounded-lg bg-green-100 border border-green-300 shadow-md animate-fade-in">
+              <div class="flex items-center gap-2 mb-2">
+                <i data-lucide="check-circle" class="w-6 h-6 text-green-600"></i>
+                <span class="text-lg font-semibold">Relación Riesgo:Recompensa</span>
+              </div>
+              <p class="text-3xl text-green-700 font-extrabold tracking-wide">
+                1:{{ resultado.relacion.toFixed(2) }}
               </p>
-              <p>
-                <strong>Recompensa:</strong>
-                <span v-text="resultado.pipsRecompensa.toFixed(2) + ' pips → $' + resultado.gananciaUSD.toFixed(2)"></span>
-              </p>
-              <p>
-                <strong>Relación R:R:</strong>
-                <span v-text="resultado.relacion.toFixed(2)"></span>
-              </p>
-              <p class="mt-2 font-medium" :class="resultado.colorClass">
+            </div>
+
+            <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200 animate-fade-in">
+              <p class="text-sm text-blue-800 mb-2">Fórmula aplicada:</p>
+              <div class="text-center" v-html="calculoHTML"></div>
+              <div class="mt-3 text-sm text-blue-600">
+                <div>Donde:</div>
+                <div>Entrada = {{ entrada }}</div>
+                <div>Stop Loss = {{ stop }}</div>
+                <div>Take Profit = {{ take }}</div>
+                <div>Lote = {{ lote }}</div>
+                <div>Valor del pip = \${{ tradingPairs[pair].valorPip }}</div>
+              </div>
+            </div>
+
+            <div class="mt-4 p-4 bg-gray-100 border border-gray-300 rounded text-sm">
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <strong>Riesgo:</strong>
+                  <div>{{ resultado.pipsRiesgo.toFixed(2) }} pips</div>
+                  <div class="text-red-600">\${{ resultado.riesgoUSD.toFixed(2) }}</div>
+                </div>
+                <div>
+                  <strong>Recompensa:</strong>
+                  <div>{{ resultado.pipsRecompensa.toFixed(2) }} pips</div>
+                  <div class="text-green-600">\${{ resultado.gananciaUSD.toFixed(2) }}</div>
+                </div>
+              </div>
+              <p class="mt-3 font-medium" :class="resultado.colorClass">
                 {{ resultado.recomendacion }}
               </p>
+            </div>
+          </div>
+
+          <!-- Información del par seleccionado -->
+          <div v-if="pair && tradingPairs[pair]" class="text-sm bg-blue-50 border border-blue-200 p-4 rounded mb-6">
+            <h3 class="font-semibold mb-2">{{ tradingPairs[pair].nombre }}</h3>
+            <p class="text-gray-600">{{ tradingPairs[pair].descripcion }}</p>
+            <div class="mt-2 grid grid-cols-2 gap-2">
+              <div>
+                <strong>Valor del pip:</strong> \${{ tradingPairs[pair].valorPip }}
+              </div>
+              <div>
+                <strong>Unidades por lote:</strong> {{ tradingPairs[pair].unidades.toLocaleString() }}
+              </div>
             </div>
           </div>
         </div>
@@ -251,31 +265,16 @@ const SimuladorCalculator = {
     </div>
   `,
   data() {
-    // Función auxiliar para obtener valor del localStorage
-    const getStorageValue = (key, defaultValue = null) => {
-      try {
-        const value = window.localStorage.getItem(key);
-        return value
-          ? key.includes("_numero_")
-            ? Number(value)
-            : value
-          : defaultValue;
-      } catch (e) {
-        console.warn("Error accediendo a localStorage:", e);
-        return defaultValue;
-      }
-    };
-
     return {
-      pair: getStorageValue("simulador_pair", ""),
-      direccion: getStorageValue("simulador_direccion", "compra"),
-      lote: getStorageValue("simulador_numero_lote", null),
-      entrada: getStorageValue("simulador_numero_entrada", null),
-      stop: getStorageValue("simulador_numero_stop", null),
-      take: getStorageValue("simulador_numero_take", null),
-      ayudaActiva: "",
+      pair: "",
+      direccion: "compra",
+      lote: null,
+      entrada: null,
+      stop: null,
+      take: null,
       resultado: null,
       notification: null,
+      ayudaActiva: "",
       errors: {
         pair: "",
         direccion: "",
@@ -284,65 +283,34 @@ const SimuladorCalculator = {
         stop: "",
         take: "",
       },
-      pipTable: {
-        EURUSD: { valorPip: 10, decimales: 4, min: 0.5, max: 2 },
-        GBPUSD: { valorPip: 10, decimales: 4, min: 0.5, max: 2 },
-        USDJPY: { valorPip: 9.13, decimales: 2, min: 50, max: 200 },
-        GBPJPY: { valorPip: 9.13, decimales: 2, min: 50, max: 200 },
-        AUDUSD: { valorPip: 10, decimales: 4, min: 0.5, max: 1.5 },
-        NZDUSD: { valorPip: 10, decimales: 4, min: 0.5, max: 1.5 },
-        USDCHF: { valorPip: 10, decimales: 4, min: 0.5, max: 2 },
-        USDCAD: { valorPip: 10, decimales: 4, min: 0.5, max: 2 },
-        XAUUSD: { valorPip: 1, decimales: 2, min: 1000, max: 3000 },
-        XAGUSD: { valorPip: 5, decimales: 3, min: 10, max: 50 },
-        XAUEUR: { valorPip: 1, decimales: 2, min: 1000, max: 3000 },
-        XAGEUR: { valorPip: 5, decimales: 3, min: 10, max: 50 },
-      },
+      tradingPairs: window.tradingPairs,
       ayudas: {
-        pair: "Selecciona el par que vas a operar. El valor del pip por lote depende del activo: no es lo mismo operar EUR/USD que oro o plata.",
+        pair: "Selecciona el par de divisas o activo que vas a operar. Cada instrumento tiene diferentes unidades por lote estándar.",
         direccion:
-          "Define si estás abriendo una posición de compra (long) o venta (short). En una compra, ganas si el precio sube; en una venta, ganas si el precio baja.",
-        lote: "El tamaño del lote determina la exposición de tu operación. Más lote implica mayor impacto del spread y de cualquier comisión.",
-        entrada:
-          "El precio al que planeas abrir la operación. Debe tener en cuenta los decimales correctos según el par.",
+          "Indica si vas a abrir una posición de compra (long) o venta (short).",
+        lote: "El tamaño de la posición en lotes. Un lote estándar equivale a 100,000 unidades de la divisa base.",
+        entrada: "El precio al que planeas abrir la operación.",
         stop: "El precio donde colocarás tu stop loss. En una compra debe ser menor que la entrada, en una venta debe ser mayor.",
-        take: "El precio objetivo donde tomarás ganancias. En una compra debe ser mayor que la entrada, en una venta debe ser menor.",
+        take: "El precio objetivo donde planeas tomar ganancias. En una compra debe ser mayor que la entrada, en una venta debe ser menor.",
         result: `<div class='space-y-4'>
-          <p>El simulador calcula el riesgo y la recompensa usando las siguientes fórmulas:</p>
+          <p>El riesgo y la recompensa se calculan en pips y luego se convierten a USD:</p>
           
-          <div class='space-y-2'>
-            <p>Para operaciones de compra (long):</p>
-            <div class='text-center'>
-              $$\\text{Pips Riesgo} = (PE - SL) \\times F$$
-              $$\\text{Pips Recompensa} = (TP - PE) \\times F$$
-            </div>
-            
-            <p>Para operaciones de venta (short):</p>
-            <div class='text-center'>
-              $$\\text{Pips Riesgo} = (SL - PE) \\times F$$
-              $$\\text{Pips Recompensa} = (PE - TP) \\times F$$
-            </div>
-            
-            <p>El valor monetario se calcula como:</p>
-            <div class='text-center'>
-              $$\\text{Valor USD} = \\text{Pips} \\times VP \\times L$$
-            </div>
-            
-            <p>La relación riesgo-recompensa (R:R) es:</p>
-            <div class='text-center'>
-              $$R:R = \\frac{\\text{Pips Recompensa}}{\\text{Pips Riesgo}}$$
-            </div>
+          <div class='text-center'>
+            $$\\text{Pips} = \\frac{|\\text{Precio}_1 - \\text{Precio}_2|}{\\text{Tamaño del pip}}$$
+          </div>
+
+          <div class='text-center'>
+            $$\\text{USD} = \\text{Pips} \\times \\text{Valor del pip} \\times \\text{Lote}$$
           </div>
 
           <div class='space-y-1 mt-3'>
-            <p>Donde:</p>
-            <div class='ml-4'>• $PE$: Precio de entrada</div>
-            <div class='ml-4'>• $SL$: Stop loss</div>
-            <div class='ml-4'>• $TP$: Take profit</div>
-            <div class='ml-4'>• $F$: Factor de conversión a pips</div>
-            <div class='ml-4'>• $VP$: Valor del pip</div>
-            <div class='ml-4'>• $L$: Tamaño del lote</div>
+            <p>La relación riesgo:recompensa (R:R) se calcula como:</p>
+            <div class='text-center'>
+              $$\\text{R:R} = \\frac{\\text{Recompensa en pips}}{\\text{Riesgo en pips}}$$
+            </div>
           </div>
+
+          <p>Se recomienda buscar operaciones con una relación R:R mínima de 1:2, es decir, que la recompensa potencial sea al menos el doble que el riesgo asumido.</p>
         </div>`,
       },
     };
@@ -356,59 +324,38 @@ const SimuladorCalculator = {
         this.entrada > 0 &&
         this.stop > 0 &&
         this.take > 0 &&
-        Object.values(this.errors).every((error) => !error)
+        !Object.values(this.errors).some((error) => error)
       );
-    },
-    haySimulacionGuardada() {
-      try {
-        return Boolean(
-          window.localStorage.getItem("simulador_ultimo_resultado")
-        );
-      } catch (e) {
-        return false;
-      }
     },
     calculoHTML() {
       if (!this.resultado) return "";
 
-      const operacion =
-        this.direccion === "compra"
-          ? `\\begin{align*}
-        \\text{Riesgo} &= (${this.entrada} - ${
-              this.stop
-            }) \\times F = ${this.resultado.pipsRiesgo.toFixed(
-              2
-            )}\\text{ pips} \\\\
-        \\text{Recompensa} &= (${this.take} - ${
-              this.entrada
-            }) \\times F = ${this.resultado.pipsRecompensa.toFixed(
-              2
-            )}\\text{ pips} \\\\
-        R:R &= \\frac{${this.resultado.pipsRecompensa.toFixed(
-          2
-        )}}{${this.resultado.pipsRiesgo.toFixed(
-              2
-            )}} = ${this.resultado.relacion.toFixed(2)}
-        \\end{align*}`
-          : `\\begin{align*}
-        \\text{Riesgo} &= (${this.stop} - ${
-              this.entrada
-            }) \\times F = ${this.resultado.pipsRiesgo.toFixed(
-              2
-            )}\\text{ pips} \\\\
-        \\text{Recompensa} &= (${this.entrada} - ${
-              this.take
-            }) \\times F = ${this.resultado.pipsRecompensa.toFixed(
-              2
-            )}\\text{ pips} \\\\
-        R:R &= \\frac{${this.resultado.pipsRecompensa.toFixed(
-          2
-        )}}{${this.resultado.pipsRiesgo.toFixed(
-              2
-            )}} = ${this.resultado.relacion.toFixed(2)}
-        \\end{align*}`;
+      const info = this.tradingPairs[this.pair];
+      const pipSize = Math.pow(10, -info.decimales);
 
-      return operacion;
+      return `\\begin{align*}
+        \\text{Riesgo} &= \\frac{|${this.entrada} - ${
+        this.stop
+      }|}{${pipSize}} = ${this.resultado.pipsRiesgo.toFixed(
+        2
+      )}\\text{ pips} \\\\
+        &= ${this.resultado.pipsRiesgo.toFixed(2)} \\times ${
+        info.valorPip
+      } \\times ${this.lote} = \\$${this.resultado.riesgoUSD.toFixed(2)} \\\\
+        \\text{Recompensa} &= \\frac{|${this.entrada} - ${
+        this.take
+      }|}{${pipSize}} = ${this.resultado.pipsRecompensa.toFixed(
+        2
+      )}\\text{ pips} \\\\
+        &= ${this.resultado.pipsRecompensa.toFixed(2)} \\times ${
+        info.valorPip
+      } \\times ${this.lote} = \\$${this.resultado.gananciaUSD.toFixed(2)} \\\\
+        \\text{R:R} &= \\frac{${this.resultado.pipsRecompensa.toFixed(
+          2
+        )}}{${this.resultado.pipsRiesgo.toFixed(
+        2
+      )}} = 1:${this.resultado.relacion.toFixed(2)}
+      \\end{align*}`;
     },
   },
   methods: {
@@ -417,13 +364,11 @@ const SimuladorCalculator = {
     },
     showNotification(type, title, message, duration = 5000) {
       this.notification = { type, title, message };
-      setTimeout(() => {
-        this.notification = null;
-      }, duration);
+      setTimeout(() => (this.notification = null), duration);
     },
     getPipSize() {
-      if (!this.pair) return "0.0001";
-      return Math.pow(10, -this.pipTable[this.pair].decimales).toString();
+      if (!this.pair || !this.tradingPairs[this.pair]) return 0.0001;
+      return Math.pow(10, -this.tradingPairs[this.pair].decimales);
     },
     validateInputs() {
       this.errors = {
@@ -436,312 +381,161 @@ const SimuladorCalculator = {
       };
 
       if (!this.pair) {
-        this.errors.pair = "Selecciona un par de divisas";
+        this.errors.pair = "Por favor selecciona un par de divisas.";
         return false;
       }
 
       if (!this.direccion) {
-        this.errors.direccion = "Selecciona la dirección de la operación";
+        this.errors.direccion =
+          "Por favor selecciona la dirección de la operación.";
         return false;
       }
 
       if (!this.lote || this.lote <= 0) {
-        this.errors.lote = "El tamaño del lote debe ser mayor que 0";
+        this.errors.lote = "El tamaño del lote debe ser mayor a 0.";
         return false;
       }
-      if (this.lote > 100) {
-        this.errors.lote = "El tamaño del lote no debe exceder 100";
-        return false;
-      }
-
-      const info = this.pipTable[this.pair];
 
       if (!this.entrada || this.entrada <= 0) {
-        this.errors.entrada = "El precio de entrada debe ser mayor que 0";
-        return false;
-      }
-      if (this.entrada < info.min || this.entrada > info.max) {
-        this.errors.entrada = `El precio debe estar entre ${info.min} y ${info.max}`;
+        this.errors.entrada = "El precio de entrada debe ser mayor a 0.";
         return false;
       }
 
       if (!this.stop || this.stop <= 0) {
-        this.errors.stop = "El stop loss debe ser mayor que 0";
-        return false;
-      }
-      if (this.stop < info.min || this.stop > info.max) {
-        this.errors.stop = `El precio debe estar entre ${info.min} y ${info.max}`;
+        this.errors.stop = "El stop loss debe ser mayor a 0.";
         return false;
       }
 
       if (!this.take || this.take <= 0) {
-        this.errors.take = "El take profit debe ser mayor que 0";
-        return false;
-      }
-      if (this.take < info.min || this.take > info.max) {
-        this.errors.take = `El precio debe estar entre ${info.min} y ${info.max}`;
+        this.errors.take = "El take profit debe ser mayor a 0.";
         return false;
       }
 
-      // Validar que el stop y take estén en la posición correcta según la dirección
+      // Validar lógica de precios según dirección
       if (this.direccion === "compra") {
         if (this.stop >= this.entrada) {
           this.errors.stop =
-            "En una compra, el stop loss debe estar por debajo del precio de entrada";
+            "En una compra, el stop loss debe ser menor que el precio de entrada.";
           return false;
         }
         if (this.take <= this.entrada) {
           this.errors.take =
-            "En una compra, el take profit debe estar por encima del precio de entrada";
+            "En una compra, el take profit debe ser mayor que el precio de entrada.";
           return false;
         }
       } else {
-        // venta
         if (this.stop <= this.entrada) {
           this.errors.stop =
-            "En una venta, el stop loss debe estar por encima del precio de entrada";
+            "En una venta, el stop loss debe ser mayor que el precio de entrada.";
           return false;
         }
         if (this.take >= this.entrada) {
           this.errors.take =
-            "En una venta, el take profit debe estar por debajo del precio de entrada";
+            "En una venta, el take profit debe ser menor que el precio de entrada.";
           return false;
         }
       }
 
       return true;
     },
-    updateInputSteps() {
-      if (this.pair) {
-        const pipSize = this.getPipSize();
-        // Limpiar valores anteriores si el par cambia
-        this.entrada = null;
-        this.stop = null;
-        this.take = null;
-        this.resultado = null;
-      }
-    },
     simular() {
-      if (!this.validateInputs()) {
-        this.showNotification(
-          "error",
-          "Error de validación",
-          "Por favor, corrige los errores señalados."
-        );
-        return;
-      }
+      if (this.validateInputs()) {
+        const info = this.tradingPairs[this.pair];
+        const pipSize = Math.pow(10, -info.decimales);
 
-      const info = this.pipTable[this.pair];
-      const pipSize = Math.pow(10, -info.decimales);
+        // Calcular pips de riesgo y recompensa
+        const pipsRiesgo = Math.abs(this.entrada - this.stop) / pipSize;
+        const pipsRecompensa = Math.abs(this.entrada - this.take) / pipSize;
 
-      // Calcular pips según la dirección
-      const pipsRiesgo = Math.abs(this.entrada - this.stop) / pipSize;
-      const pipsRecompensa = Math.abs(this.take - this.entrada) / pipSize;
+        // Calcular valores en USD
+        const riesgoUSD = pipsRiesgo * info.valorPip * this.lote;
+        const gananciaUSD = pipsRecompensa * info.valorPip * this.lote;
 
-      // Calcular ganancias/pérdidas según la dirección
-      const riesgoUSD = pipsRiesgo * info.valorPip * this.lote;
-      const gananciaUSD = pipsRecompensa * info.valorPip * this.lote;
+        // Calcular relación riesgo:recompensa
+        const relacion = pipsRecompensa / pipsRiesgo;
 
-      const relacion = gananciaUSD / riesgoUSD;
+        // Determinar recomendación y color
+        let recomendacion = "";
+        let colorClass = "";
 
-      let recomendacion = "";
-      let colorClass = "";
-
-      if (relacion < 1) {
-        recomendacion =
-          "❌ Riesgo no justificado: estás arriesgando más de lo que puedes ganar.";
-        colorClass = "text-red-600";
-      } else if (relacion >= 1 && relacion < 2) {
-        recomendacion =
-          "⚠️ Riesgo equilibrado: asegúrate de que esta operación tenga alta probabilidad.";
-        colorClass = "text-yellow-600";
-      } else {
-        recomendacion =
-          "✅ Excelente relación: tu recompensa supera ampliamente el riesgo asumido.";
-        colorClass = "text-green-600";
-      }
-
-      this.resultado = {
-        pipsRiesgo,
-        pipsRecompensa,
-        riesgoUSD,
-        gananciaUSD,
-        relacion,
-        recomendacion,
-        colorClass,
-        direccion: this.direccion,
-      };
-
-      this.setAyuda("result");
-      this.$nextTick(() => {
-        if (window.MathJax) {
-          window.MathJax.typesetPromise && window.MathJax.typesetPromise();
-        }
-      });
-
-      // Mostrar notificación de éxito
-      this.showNotification(
-        relacion >= 2 ? "success" : relacion >= 1 ? "warning" : "error",
-        "Simulación completada",
-        `Relación riesgo/recompensa: ${relacion.toFixed(2)}`
-      );
-    },
-    cargarUltimaSimulacion() {
-      try {
-        const ultimoResultado = window.localStorage.getItem(
-          "simulador_ultimo_resultado"
-        );
-        if (ultimoResultado) {
-          const datos = JSON.parse(ultimoResultado);
-          this.pair = datos.pair;
-          this.direccion = datos.direccion;
-          this.lote = datos.lote;
-          this.entrada = datos.entrada;
-          this.stop = datos.stop;
-          this.take = datos.take;
-          this.showNotification(
-            "info",
-            "Simulación anterior cargada",
-            "Se han recuperado los valores de tu última simulación."
-          );
-        }
-      } catch (e) {
-        console.warn("Error cargando última simulación:", e);
-        this.showNotification(
-          "error",
-          "Error al cargar",
-          "No se pudo recuperar la última simulación."
-        );
-      }
-    },
-    limpiarFormulario() {
-      this.pair = "";
-      this.direccion = "compra";
-      this.lote = null;
-      this.entrada = null;
-      this.stop = null;
-      this.take = null;
-      this.resultado = null;
-      this.errors = {
-        pair: "",
-        direccion: "",
-        lote: "",
-        entrada: "",
-        stop: "",
-        take: "",
-      };
-
-      try {
-        // Limpiar localStorage
-        const keysToRemove = [
-          "simulador_pair",
-          "simulador_direccion",
-          "simulador_numero_lote",
-          "simulador_numero_entrada",
-          "simulador_numero_stop",
-          "simulador_numero_take",
-          "simulador_ultimo_resultado",
-        ];
-        keysToRemove.forEach((key) => window.localStorage.removeItem(key));
-
-        this.showNotification(
-          "success",
-          "Formulario limpiado",
-          "Se han eliminado todos los valores."
-        );
-      } catch (e) {
-        console.warn("Error limpiando localStorage:", e);
-      }
-    },
-    setStorageValue(key, value) {
-      try {
-        if (value === null || value === "") {
-          window.localStorage.removeItem(key);
+        if (relacion >= 3) {
+          recomendacion =
+            "¡Excelente setup! La recompensa potencial es más del triple que el riesgo.";
+          colorClass = "text-green-600";
+        } else if (relacion >= 2) {
+          recomendacion =
+            "Buen setup. La relación riesgo:recompensa cumple con el mínimo recomendado de 1:2.";
+          colorClass = "text-green-600";
+        } else if (relacion >= 1) {
+          recomendacion =
+            "Setup aceptable, pero considera ajustar los niveles para mejorar la relación R:R.";
+          colorClass = "text-yellow-600";
         } else {
-          window.localStorage.setItem(key, value);
+          recomendacion =
+            "No recomendado. El riesgo es mayor que la recompensa potencial.";
+          colorClass = "text-red-600";
         }
-      } catch (e) {
-        console.warn("Error guardando en localStorage:", e);
+
+        this.resultado = {
+          pipsRiesgo,
+          pipsRecompensa,
+          riesgoUSD,
+          gananciaUSD,
+          relacion,
+          recomendacion,
+          colorClass,
+        };
+
+        this.setAyuda("result");
+        localStorage.setItem(
+          "simulador_lastResultado",
+          JSON.stringify(this.resultado)
+        );
       }
     },
   },
   watch: {
     pair(newVal) {
-      this.updateInputSteps();
-      this.setStorageValue("simulador_pair", newVal);
+      localStorage.setItem("simulador_lastPair", newVal || "");
     },
     direccion(newVal) {
-      this.setStorageValue("simulador_direccion", newVal);
+      localStorage.setItem("simulador_lastDireccion", newVal || "");
     },
     lote(newVal) {
-      this.setStorageValue("simulador_numero_lote", newVal);
+      localStorage.setItem("simulador_lastLote", newVal || "");
     },
     entrada(newVal) {
-      this.setStorageValue("simulador_numero_entrada", newVal);
+      localStorage.setItem("simulador_lastEntrada", newVal || "");
     },
     stop(newVal) {
-      this.setStorageValue("simulador_numero_stop", newVal);
+      localStorage.setItem("simulador_lastStop", newVal || "");
     },
     take(newVal) {
-      this.setStorageValue("simulador_numero_take", newVal);
-    },
-    resultado(newVal) {
-      if (newVal) {
-        try {
-          const resultadoGuardado = {
-            pair: this.pair,
-            direccion: this.direccion,
-            lote: this.lote,
-            entrada: this.entrada,
-            stop: this.stop,
-            take: this.take,
-            timestamp: new Date().toISOString(),
-            ...newVal,
-          };
-
-          // Guardar el último resultado
-          window.localStorage.setItem(
-            "simulador_ultimo_resultado",
-            JSON.stringify(resultadoGuardado)
-          );
-
-          // Guardar en el historial (manteniendo los últimos 10)
-          const historial = JSON.parse(
-            window.localStorage.getItem("simulador_historial") || "[]"
-          );
-          historial.unshift(resultadoGuardado);
-          historial.splice(10); // Mantener solo los últimos 10
-          window.localStorage.setItem(
-            "simulador_historial",
-            JSON.stringify(historial)
-          );
-        } catch (e) {
-          console.warn("Error guardando resultado:", e);
-        }
-      }
+      localStorage.setItem("simulador_lastTake", newVal || "");
     },
   },
   mounted() {
-    lucide.createIcons();
+    // Cargar valores guardados sin mostrar notificación
+    const lastPair = localStorage.getItem("simulador_lastPair");
+    const lastDireccion = localStorage.getItem("simulador_lastDireccion");
+    const lastLote = localStorage.getItem("simulador_lastLote");
+    const lastEntrada = localStorage.getItem("simulador_lastEntrada");
+    const lastStop = localStorage.getItem("simulador_lastStop");
+    const lastTake = localStorage.getItem("simulador_lastTake");
+    const lastResultado = localStorage.getItem("simulador_lastResultado");
 
-    // Comprobar si hay simulación guardada de forma segura
-    try {
-      const ultimoResultado = window.localStorage.getItem(
-        "simulador_ultimo_resultado"
-      );
-      if (ultimoResultado) {
-        this.showNotification(
-          "info",
-          "Simulación anterior disponible",
-          'Puedes cargar tu última simulación usando el botón "Cargar última"'
-        );
-      }
-    } catch (e) {
-      console.warn("Error comprobando simulación guardada:", e);
-    }
+    if (lastPair) this.pair = lastPair;
+    if (lastDireccion) this.direccion = lastDireccion;
+    if (lastLote) this.lote = Number(lastLote);
+    if (lastEntrada) this.entrada = Number(lastEntrada);
+    if (lastStop) this.stop = Number(lastStop);
+    if (lastTake) this.take = Number(lastTake);
+    if (lastResultado) this.resultado = JSON.parse(lastResultado);
   },
   updated() {
-    lucide.createIcons();
+    if (window.MathJax) {
+      window.MathJax.typeset();
+    }
   },
 };
 
