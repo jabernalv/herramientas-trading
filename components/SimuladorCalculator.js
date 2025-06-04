@@ -57,6 +57,7 @@ const SimuladorCalculator = {
               <select
                 v-model="pair"
                 @focus="setAyuda('pair')"
+                @blur="validateField('pair')"
                 class="w-full pl-10 border border-gray-300 rounded p-2"
                 :class="{'border-red-500': errors.pair}"
               >
@@ -85,6 +86,7 @@ const SimuladorCalculator = {
               <select
                 v-model="direccion"
                 @focus="setAyuda('direccion')"
+                @blur="validateField('direccion')"
                 class="w-full pl-10 border border-gray-300 rounded p-2"
                 :class="{'border-red-500': errors.direccion}"
               >
@@ -107,6 +109,7 @@ const SimuladorCalculator = {
               <input
                 v-model.number="lote"
                 @focus="setAyuda('lote')"
+                @blur="validateField('lote')"
                 type="number"
                 step="0.01"
                 min="0.01"
@@ -129,6 +132,7 @@ const SimuladorCalculator = {
               <input
                 v-model.number="entrada"
                 @focus="setAyuda('entrada')"
+                @blur="validateField('entrada')"
                 type="number"
                 :step="getPipSize()"
                 class="w-full text-right pl-10 border border-gray-300 rounded p-2"
@@ -140,15 +144,15 @@ const SimuladorCalculator = {
             </div>
 
             <div class="relative">
-              <label class="block font-semibold mb-1"
-                >Stop loss (precio)</label
-              >
+              <label class="block font-semibold mb-1">Stop loss (precio)</label>
               <span class="absolute left-3 top-10 text-gray-500">
                 <i data-lucide="arrow-down-circle" class="w-4 h-4"></i>
               </span>
               <input
                 v-model.number="stop"
                 @focus="setAyuda('stop')"
+                @blur="validateField('stop')"
+                @input="updateStopPips"
                 type="number"
                 :step="getPipSize()"
                 class="w-full text-right pl-10 border border-gray-300 rounded p-2"
@@ -160,15 +164,35 @@ const SimuladorCalculator = {
             </div>
 
             <div class="relative">
-              <label class="block font-semibold mb-1"
-                >Take profit (precio)</label
-              >
+              <label class="block font-semibold mb-1">Stop loss (pips)</label>
+              <span class="absolute left-3 top-10 text-gray-500">
+                <i data-lucide="move-horizontal" class="w-4 h-4"></i>
+              </span>
+              <input
+                v-model.number="stopPips"
+                @focus="setAyuda('stopPips')"
+                @blur="validateField('stopPips')"
+                @input="updateStopPrice"
+                type="number"
+                step="1"
+                class="w-full text-right pl-10 border border-gray-300 rounded p-2"
+                :class="{'border-red-500': errors.stopPips}"
+              />
+              <p v-if="errors.stopPips" class="text-red-500 text-xs mt-1">
+                {{ errors.stopPips }}
+              </p>
+            </div>
+
+            <div class="relative">
+              <label class="block font-semibold mb-1">Take profit (precio)</label>
               <span class="absolute left-3 top-10 text-gray-500">
                 <i data-lucide="arrow-up-circle" class="w-4 h-4"></i>
               </span>
               <input
                 v-model.number="take"
                 @focus="setAyuda('take')"
+                @blur="validateField('take')"
+                @input="updateTakePips"
                 type="number"
                 :step="getPipSize()"
                 class="w-full text-right pl-10 border border-gray-300 rounded p-2"
@@ -176,6 +200,26 @@ const SimuladorCalculator = {
               />
               <p v-if="errors.take" class="text-red-500 text-xs mt-1">
                 {{ errors.take }}
+              </p>
+            </div>
+
+            <div class="relative">
+              <label class="block font-semibold mb-1">Take profit (pips)</label>
+              <span class="absolute left-3 top-10 text-gray-500">
+                <i data-lucide="move-horizontal" class="w-4 h-4"></i>
+              </span>
+              <input
+                v-model.number="takePips"
+                @focus="setAyuda('takePips')"
+                @blur="validateField('takePips')"
+                @input="updateTakePrice"
+                type="number"
+                step="1"
+                class="w-full text-right pl-10 border border-gray-300 rounded p-2"
+                :class="{'border-red-500': errors.takePips}"
+              />
+              <p v-if="errors.takePips" class="text-red-500 text-xs mt-1">
+                {{ errors.takePips }}
               </p>
             </div>
           </div>
@@ -271,7 +315,9 @@ const SimuladorCalculator = {
       lote: null,
       entrada: null,
       stop: null,
+      stopPips: null,
       take: null,
+      takePips: null,
       resultado: null,
       notification: null,
       ayudaActiva: "",
@@ -281,7 +327,9 @@ const SimuladorCalculator = {
         lote: "",
         entrada: "",
         stop: "",
+        stopPips: "",
         take: "",
+        takePips: "",
       },
       tradingPairs: window.tradingPairs,
       ayudas: {
@@ -291,7 +339,11 @@ const SimuladorCalculator = {
         lote: "El tamaño de la posición en lotes. Un lote estándar equivale a 100,000 unidades de la divisa base.",
         entrada: "El precio al que planeas abrir la operación.",
         stop: "El precio donde colocarás tu stop loss. En una compra debe ser menor que la entrada, en una venta debe ser mayor.",
+        stopPips:
+          "La distancia en pips desde el precio de entrada hasta el stop loss.",
         take: "El precio objetivo donde planeas tomar ganancias. En una compra debe ser mayor que la entrada, en una venta debe ser menor.",
+        takePips:
+          "La distancia en pips desde el precio de entrada hasta el take profit.",
         result: `<div class='space-y-4'>
           <p>El riesgo y la recompensa se calculan en pips y luego se convierten a USD:</p>
           
@@ -370,73 +422,121 @@ const SimuladorCalculator = {
       if (!this.pair || !this.tradingPairs[this.pair]) return 0.0001;
       return Math.pow(10, -this.tradingPairs[this.pair].decimales);
     },
+    validateField(field) {
+      // Limpiar el error específico
+      this.errors[field] = "";
+
+      switch (field) {
+        case "pair":
+          if (!this.pair) {
+            this.errors.pair = "Selecciona un par";
+          }
+          break;
+
+        case "direccion":
+          if (!this.direccion) {
+            this.errors.direccion = "Selecciona una dirección";
+          }
+          break;
+
+        case "lote":
+          if (!this.lote || this.lote <= 0 || this.lote > 100) {
+            this.errors.lote = "El lote debe estar entre 0.01 y 100";
+          }
+          break;
+
+        case "entrada":
+          if (!this.entrada || this.entrada <= 0) {
+            this.errors.entrada = "El precio de entrada debe ser mayor a 0";
+          }
+          break;
+
+        case "stop":
+          if (!this.stop || this.stop <= 0) {
+            this.errors.stop = "El stop loss debe ser mayor a 0";
+          } else if (this.entrada) {
+            // Solo validar si hay precio de entrada
+            if (this.direccion === "compra" && this.stop >= this.entrada) {
+              this.errors.stop =
+                "En una compra, el stop loss debe estar por debajo del precio de entrada";
+              this.showNotification(
+                "error",
+                "Error en Stop Loss",
+                "En una operación de compra, el stop loss debe estar por debajo del precio de entrada"
+              );
+            } else if (
+              this.direccion === "venta" &&
+              this.stop <= this.entrada
+            ) {
+              this.errors.stop =
+                "En una venta, el stop loss debe estar por encima del precio de entrada";
+              this.showNotification(
+                "error",
+                "Error en Stop Loss",
+                "En una operación de venta, el stop loss debe estar por encima del precio de entrada"
+              );
+            }
+          }
+          break;
+
+        case "take":
+          if (!this.take || this.take <= 0) {
+            this.errors.take = "El take profit debe ser mayor a 0";
+          } else if (this.entrada) {
+            // Solo validar si hay precio de entrada
+            if (this.direccion === "compra" && this.take <= this.entrada) {
+              this.errors.take =
+                "En una compra, el take profit debe estar por encima del precio de entrada";
+              this.showNotification(
+                "error",
+                "Error en Take Profit",
+                "En una operación de compra, el take profit debe estar por encima del precio de entrada"
+              );
+            } else if (
+              this.direccion === "venta" &&
+              this.take >= this.entrada
+            ) {
+              this.errors.take =
+                "En una venta, el take profit debe estar por debajo del precio de entrada";
+              this.showNotification(
+                "error",
+                "Error en Take Profit",
+                "En una operación de venta, el take profit debe estar por debajo del precio de entrada"
+              );
+            }
+          }
+          break;
+
+        case "stopPips":
+          if (!this.stopPips || this.stopPips <= 0) {
+            this.errors.stopPips = "Los pips deben ser mayores a 0";
+          }
+          break;
+
+        case "takePips":
+          if (!this.takePips || this.takePips <= 0) {
+            this.errors.takePips = "Los pips deben ser mayores a 0";
+          }
+          break;
+      }
+
+      // Validar campos relacionados cuando cambia la dirección o el precio de entrada
+      if (field === "direccion" || field === "entrada") {
+        if (this.stop) this.validateField("stop");
+        if (this.take) this.validateField("take");
+      }
+    },
     validateInputs() {
-      this.errors = {
-        pair: "",
-        direccion: "",
-        lote: "",
-        entrada: "",
-        stop: "",
-        take: "",
-      };
+      // Validar todos los campos
+      this.validateField("pair");
+      this.validateField("direccion");
+      this.validateField("lote");
+      this.validateField("entrada");
+      this.validateField("stop");
+      this.validateField("take");
 
-      if (!this.pair) {
-        this.errors.pair = "Por favor selecciona un par de divisas.";
-        return false;
-      }
-
-      if (!this.direccion) {
-        this.errors.direccion =
-          "Por favor selecciona la dirección de la operación.";
-        return false;
-      }
-
-      if (!this.lote || this.lote <= 0) {
-        this.errors.lote = "El tamaño del lote debe ser mayor a 0.";
-        return false;
-      }
-
-      if (!this.entrada || this.entrada <= 0) {
-        this.errors.entrada = "El precio de entrada debe ser mayor a 0.";
-        return false;
-      }
-
-      if (!this.stop || this.stop <= 0) {
-        this.errors.stop = "El stop loss debe ser mayor a 0.";
-        return false;
-      }
-
-      if (!this.take || this.take <= 0) {
-        this.errors.take = "El take profit debe ser mayor a 0.";
-        return false;
-      }
-
-      // Validar lógica de precios según dirección
-      if (this.direccion === "compra") {
-        if (this.stop >= this.entrada) {
-          this.errors.stop =
-            "En una compra, el stop loss debe ser menor que el precio de entrada.";
-          return false;
-        }
-        if (this.take <= this.entrada) {
-          this.errors.take =
-            "En una compra, el take profit debe ser mayor que el precio de entrada.";
-          return false;
-        }
-      } else {
-        if (this.stop <= this.entrada) {
-          this.errors.stop =
-            "En una venta, el stop loss debe ser mayor que el precio de entrada.";
-          return false;
-        }
-        if (this.take >= this.entrada) {
-          this.errors.take =
-            "En una venta, el take profit debe ser menor que el precio de entrada.";
-          return false;
-        }
-      }
-
-      return true;
+      // Retornar true si no hay errores
+      return !Object.values(this.errors).some((error) => error);
     },
     simular() {
       if (this.validateInputs()) {
@@ -493,18 +593,62 @@ const SimuladorCalculator = {
         );
       }
     },
+    updateStopPips() {
+      if (this.entrada && this.stop && this.pair) {
+        const pipSize = this.getPipSize();
+        this.stopPips = Math.abs(
+          Math.round((this.entrada - this.stop) / pipSize)
+        );
+      }
+    },
+    updateStopPrice() {
+      if (this.entrada && this.stopPips != null && this.pair) {
+        const pipSize = this.getPipSize();
+        const pipsValue = this.stopPips * pipSize;
+        this.stop =
+          this.direccion === "compra"
+            ? this.entrada - pipsValue
+            : this.entrada + pipsValue;
+        this.validateField("stop");
+      }
+    },
+    updateTakePips() {
+      if (this.entrada && this.take && this.pair) {
+        const pipSize = this.getPipSize();
+        this.takePips = Math.abs(
+          Math.round((this.take - this.entrada) / pipSize)
+        );
+      }
+    },
+    updateTakePrice() {
+      if (this.entrada && this.takePips != null && this.pair) {
+        const pipSize = this.getPipSize();
+        const pipsValue = this.takePips * pipSize;
+        this.take =
+          this.direccion === "compra"
+            ? this.entrada + pipsValue
+            : this.entrada - pipsValue;
+        this.validateField("take");
+      }
+    },
   },
   watch: {
     pair(newVal) {
       localStorage.setItem("simulador_lastPair", newVal || "");
     },
     direccion(newVal) {
+      // Cuando cambia la dirección, actualizar los precios basados en los pips
+      if (this.stopPips) this.updateStopPrice();
+      if (this.takePips) this.updateTakePrice();
       localStorage.setItem("simulador_lastDireccion", newVal || "");
     },
     lote(newVal) {
       localStorage.setItem("simulador_lastLote", newVal || "");
     },
     entrada(newVal) {
+      // Cuando cambia la entrada, actualizar los precios basados en los pips
+      if (this.stopPips) this.updateStopPrice();
+      if (this.takePips) this.updateTakePrice();
       localStorage.setItem("simulador_lastEntrada", newVal || "");
     },
     stop(newVal) {
@@ -512,6 +656,12 @@ const SimuladorCalculator = {
     },
     take(newVal) {
       localStorage.setItem("simulador_lastTake", newVal || "");
+    },
+    stopPips(newVal) {
+      localStorage.setItem("simulador_lastStopPips", newVal || "");
+    },
+    takePips(newVal) {
+      localStorage.setItem("simulador_lastTakePips", newVal || "");
     },
   },
   mounted() {
@@ -523,6 +673,8 @@ const SimuladorCalculator = {
     const lastStop = localStorage.getItem("simulador_lastStop");
     const lastTake = localStorage.getItem("simulador_lastTake");
     const lastResultado = localStorage.getItem("simulador_lastResultado");
+    const lastStopPips = localStorage.getItem("simulador_lastStopPips");
+    const lastTakePips = localStorage.getItem("simulador_lastTakePips");
 
     if (lastPair) this.pair = lastPair;
     if (lastDireccion) this.direccion = lastDireccion;
@@ -531,6 +683,8 @@ const SimuladorCalculator = {
     if (lastStop) this.stop = Number(lastStop);
     if (lastTake) this.take = Number(lastTake);
     if (lastResultado) this.resultado = JSON.parse(lastResultado);
+    if (lastStopPips) this.stopPips = Number(lastStopPips);
+    if (lastTakePips) this.takePips = Number(lastTakePips);
   },
   updated() {
     if (window.MathJax) {
