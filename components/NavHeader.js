@@ -6,7 +6,18 @@ const NavHeader = {
           <img src="assets/trading_tools.svg" alt="Trading Tools" class="h-8 w-8">
           Herramientas de trading
         </a>
-        <div class="flex space-x-4">
+        
+        <!-- Botón hamburguesa para móvil -->
+        <button 
+          @click="toggleMobileMenu"
+          class="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-300 hover:text-white hover:bg-blue-700 focus:outline-none"
+        >
+          <span class="sr-only">Abrir menú principal</span>
+          <i data-lucide="menu" class="block h-6 w-6"></i>
+        </button>
+
+        <!-- Menú de escritorio -->
+        <div class="hidden md:flex space-x-4">
           <a href="#" @click.prevent="selectOption('mercados')" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2">
             <i data-lucide="globe" class="w-4 h-4"></i>
             Mercados
@@ -54,21 +65,66 @@ const NavHeader = {
             Inicio
           </a>
         </div>
+
+        <!-- Menú móvil -->
+        <div 
+          v-show="isMobileMenuOpen" 
+          class="md:hidden absolute top-full left-0 w-full bg-blue-800 shadow-lg"
+        >
+          <div class="px-2 pt-2 pb-3 space-y-1">
+            <a href="#" @click.prevent="selectOption('home')" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
+              <i data-lucide="home" class="w-4 h-4 inline-block mr-2"></i>
+              Inicio
+            </a>
+            <a href="#" @click.prevent="selectOption('mercados')" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
+              <i data-lucide="globe" class="w-4 h-4 inline-block mr-2"></i>
+              Mercados
+            </a>
+            <a href="#" @click.prevent="selectOption('lote')" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
+              <i data-lucide="layers" class="w-4 h-4 inline-block mr-2"></i>
+              Lote
+            </a>
+            <a href="#" @click.prevent="selectOption('ganancia')" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
+              <i data-lucide="trending-up" class="w-4 h-4 inline-block mr-2"></i>
+              Ganancia
+            </a>
+            <a href="#" @click.prevent="selectOption('breakeven')" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
+              <i data-lucide="equal" class="w-4 h-4 inline-block mr-2"></i>
+              Break-even
+            </a>
+            <a href="#" @click.prevent="selectOption('simulador')" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
+              <i data-lucide="bar-chart-3" class="w-4 h-4 inline-block mr-2"></i>
+              Simulador R:R
+            </a>
+            <a href="#" @click.prevent="selectOption('margen')" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
+              <i data-lucide="percent" class="w-4 h-4 inline-block mr-2"></i>
+              Margen
+            </a>
+          </div>
+        </div>
       </div>
     </nav>
   `,
   data() {
     return {
       isMenuOpen: false,
+      isMobileMenuOpen: false,
     };
   },
   methods: {
     toggleMenu() {
       this.isMenuOpen = !this.isMenuOpen;
     },
+    toggleMobileMenu() {
+      this.isMobileMenuOpen = !this.isMobileMenuOpen;
+      this.$nextTick(() => {
+        lucide.createIcons();
+      });
+    },
     selectOption(tool) {
       this.$emit("show-tool", tool);
       this.isMenuOpen = false;
+      this.isMobileMenuOpen = false;
     },
     closeMenuOnClickOutside(event) {
       if (this.isMenuOpen && !event.target.closest(".relative")) {
