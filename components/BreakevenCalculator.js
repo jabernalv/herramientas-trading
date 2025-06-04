@@ -116,14 +116,13 @@ const BreakevenCalculator = {
               <p>
                 <strong>Break-even en pips:</strong> <span v-text="resultado.pips.toFixed(2)"></span>
               </p>
-              <p>
-                <strong>Valor equivalente en USD:</strong> $<span v-text="resultado.usd.toFixed(2)"></span>
-              </p>
               <p class="mt-2">
                 Para cubrir el costo operativo de esta operación, el precio debe moverse al menos
-                <strong><span v-text="resultado.pips.toFixed(2)"></span> pips</strong> a tu favor, lo que representa
-                <strong>$<span v-text="resultado.usd.toFixed(2)"></span></strong> considerando spread y comisiones.
+                <strong><span v-text="resultado.pips.toFixed(2)"></span> pips</strong> a tu favor.
+                Este valor incluye tanto el spread como la comisión, calculados en función del tamaño del lote ingresado.
               </p>
+              <p>Esto significa que solo a partir de ese punto, cualquier movimiento adicional comenzará a generar beneficios.</p>
+              <p>Se debe tener en cuenta que el spread se incrementa cada día y que hay días que el spread es mayor.</p>
             </div>
           </div>
 
@@ -171,25 +170,19 @@ const BreakevenCalculator = {
         comision:
           "Algunos brókers cobran una comisión fija por abrir y cerrar operaciones, adicional al spread. Aquí puedes incluirla si aplica.",
         result: `<div class='space-y-4'>
-          <p>El break-even se calcula usando la siguiente fórmula:</p>
-          <div class='text-center'>$$BE = \\dfrac{S \\times VP \\times L + C}{VP \\times L}$$</div>
-          <div class='space-y-1'>
-            <p>Donde:</p>
-            <div class='ml-4'>• <strong></i>BE</i></strong>: Break-even en pips</div>
-            <div class='ml-4'>• <strong></i>S</i></strong>: Spread en pips</div>
-            <div class='ml-4'>• <strong></i>C</i></strong>: Comisión en USD</div>
-            <div class='ml-4'>• <strong></i>VP</i></strong>: Valor del pip</div>
-            <div class='ml-4'>• <strong></i>L</i></strong>: Tamaño del lote</div>
-          </div>
-          <p>Esta fórmula considera todos los costos operativos:</p>
-          <div class='ml-4'>
-            <div>1. El spread que cobra el mercado</div>
-            <div>2. Las comisiones del bróker</div>
-            <div>3. El valor del pip según el activo</div>
-            <div>4. El tamaño de la posición (lote)</div>
-          </div>
-          <p>El resultado te indica cuántos pips debe moverse el precio a tu favor solo para cubrir los costos.</p>
-        </div>`,
+                    <p>El break-even es la cantidad mínima de pips que el precio debe moverse a tu favor para cubrir el costo operativo de una operación (spread + comisión).</p> 
+                    <p>Para calcularlo, primero se convierte la comisión en pips y luego se suma al spread:</p>
+                    <div class='text-center'>$$BE = S + \\dfrac{C}{VP \\times L}$$</div>
+                    <div class='space-y-1'>
+                        <p>Donde:</p>
+                        <div class='ml-4'>• <strong><i>BE</i></strong>: Break-even en pips</div>
+                        <div class='ml-4'>• <strong><i>S</i></strong>: Spread - Diferencia entre precio de compra y venta (en pips)</div>
+                        <div class='ml-4'>• <strong><i>C</i></strong>: Comisión - Costo del bróker por la operación (en USD)</div>
+                        <div class='ml-4'>• <strong><i>VP</i></strong>: Valor del pip - Monto que representa un pip en USD por lote</div>
+                        <div class='ml-4'>• <strong><i>L</i></strong>: Lote - Tamaño de la operación</div>
+                    </div>
+                    <p>El resultado indica cuántos pips debe avanzar el precio para que el resultado neto de la operación sea igual a cero.</p>
+                    </div>`,
       },
     };
   },
