@@ -185,11 +185,16 @@ const HomeContent = {
   },
   methods: {
     showTool(tool) {
-      this.currentTool = tool;
-      if (tool) {
-        window.history.pushState({}, "", `#${tool}`);
-      } else {
+      if (tool === "home") {
+        this.currentTool = null;
         window.history.pushState({}, "", window.location.pathname);
+      } else {
+        this.currentTool = tool;
+        if (tool) {
+          window.history.pushState({}, "", `#${tool}`);
+        } else {
+          window.history.pushState({}, "", window.location.pathname);
+        }
       }
     },
     handlePopState() {

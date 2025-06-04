@@ -49,7 +49,7 @@ const NavHeader = {
               </div>
             </div>
           </div>
-          <a href="index.html" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2">
+          <a href="#" @click.prevent="selectOption('home')" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2">
             <i data-lucide="home" class="w-4 h-4"></i>
             Inicio
           </a>

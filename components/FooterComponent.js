@@ -9,7 +9,6 @@ const FooterComponent = {
     fetch("https://intranet.dirigiendoproyectos.com/contador-trading.php")
       .then((res) => res.json())
       .then((data) => {
-        console.log("data", data);
         const span = document.getElementById("visitas");
         if (span) {
           span.innerText = `Visitas: ${data.visitas}`;
