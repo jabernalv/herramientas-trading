@@ -6,19 +6,20 @@ const FooterComponent = {
     </footer>
   `,
   mounted() {
-    fetch("https://api.countapi.xyz/hit/herramientas-trading.jabernalv/visitas")
-      .then(res => res.json())
-      .then(data => {
+    fetch("https://intranet.dirigiendoproyectos.com/contador-trading.php")
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("data", data);
         const span = document.getElementById("visitas");
         if (span) {
-          span.innerText = `Visitas: ${data.value}`;
+          span.innerText = `Visitas: ${data.visitas}`;
         }
       })
-      .catch(err => {
+      .catch((err) => {
         const span = document.getElementById("visitas");
         if (span) {
           span.innerText = "Visitas: error";
         }
       });
-  }
+  },
 };
