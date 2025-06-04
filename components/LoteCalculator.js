@@ -112,6 +112,10 @@ const LoteCalculator = {
               <p class="text-3xl text-green-700 font-extrabold tracking-wide">
                 {{ lotSize.toFixed(2) }}
               </p>
+              <div class="mt-3 text-blue-700">
+                <p>Para {{ pair }}:</p>
+                <p>{{ stopLossPips }} pips equivalen a un movimiento de {{ priceMovement }} en el precio</p>
+              </div>
             </div>
             <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200 animate-fade-in">
               <p class="text-sm text-blue-800 mb-2">Fórmula aplicada:</p>
@@ -199,6 +203,11 @@ const LoteCalculator = {
         this.riskPercent > 0 &&
         this.stopLossPips > 0
       );
+    },
+    priceMovement() {
+      if (!this.pair || !this.stopLossPips) return 0;
+      const decimals = this.tradingPairs[this.pair].decimales;
+      return (this.stopLossPips * Math.pow(0.1, decimals)).toFixed(decimals);
     },
     formulaHTML() {
       if (!this.lotSize) return "";
