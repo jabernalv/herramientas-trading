@@ -213,26 +213,29 @@ const MargenCalculator = {
         apalancamiento:
           "El apalancamiento determina qué fracción del valor nominal necesitas como margen. Por ejemplo, 100:1 significa que necesitas 1/100 del valor nominal.",
         result: `<div class='space-y-4'>
-          <p>El margen requerido se calcula usando la siguiente fórmula:</p>
-          
-          <div class='text-center'>
-            $$M = \\frac{P \\times U \\times L}{A}$$
-          </div>
-
-          <div class='space-y-1 mt-3'>
-            <p>Donde:</p>
-            <div class='ml-4'>• <strong><i>M</i></strong>: Margen requerido en USD</div>
-            <div class='ml-4'>• <strong><i>P</i></strong>: Precio actual</div>
-            <div class='ml-4'>• <strong><i>U</i></strong>: Unidades por lote</div>
-            <div class='ml-4'>• <strong><i>L</i></strong>: Tamaño del lote</div>
-            <div class='ml-4'>• <strong><i>A</i></strong>: Apalancamiento</div>
-          </div>
-
-          <p>El valor nominal representa el valor total de la posición antes del apalancamiento:</p>
-          <div class='text-center'>
-            $$\\text{Valor Nominal} = P \\times U \\times L$$
-          </div>
-        </div>`,
+                    <p>El <strong>margen requerido</strong> es la cantidad mínima que debes tener disponible en tu cuenta para abrir una operación, según:</p>
+                    <ul class='list-disc list-inside ml-4'>
+                        <li>El tamaño de la operación (valor nominal)</li>
+                        <li>El apalancamiento ofrecido</li>
+                    </ul>
+                    <p>No es una comisión, ni un costo que se descuente: es un <strong>bloqueo temporal</strong> de capital que queda congelado mientras la operación esté abierta.</p>
+                    <p>Se calcula con la siguiente fórmula:</p>
+                    <div class='text-center'>
+                        $$M = \\dfrac{P \\times U \\times L}{A}$$
+                    </div>
+                    <div class='space-y-1 mt-3'>
+                        <p>Donde:</p>
+                        <div class='ml-4'>• <strong><i>M</i></strong>: Margen requerido en USD</div>
+                        <div class='ml-4'>• <strong><i>P</i></strong>: Precio actual del activo</div>
+                        <div class='ml-4'>• <strong><i>U</i></strong>: Unidades por lote (ej. 100,000 en Forex)</div>
+                        <div class='ml-4'>• <strong><i>L</i></strong>: Tamaño del lote</div>
+                        <div class='ml-4'>• <strong><i>A</i></strong>: Apalancamiento</div>
+                    </div>
+                    <p>El valor nominal de la operación se calcula así:</p>
+                    <div class='text-center'>
+                        $$\\text{Valor Nominal} = P \\times U \\times L$$
+                    </div>
+                    </div>`,
       },
     };
   },
