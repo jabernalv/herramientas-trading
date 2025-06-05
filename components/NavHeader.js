@@ -41,6 +41,10 @@ const NavHeader = {
                   <i data-lucide="layers" class="w-4 h-4"></i>
                   Lote
                 </a>
+                <a href="#" @click.prevent="selectOption('margen')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2">
+                  <i data-lucide="percent" class="w-4 h-4"></i>
+                  Margen
+                </a>
                 <a href="#" @click.prevent="selectOption('ganancia')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2">
                   <i data-lucide="trending-up" class="w-4 h-4"></i>
                   Ganancia
@@ -52,10 +56,6 @@ const NavHeader = {
                 <a href="#" @click.prevent="selectOption('simulador')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2">
                   <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
                   Simulador R:R
-                </a>
-                <a href="#" @click.prevent="selectOption('margen')" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2">
-                  <i data-lucide="percent" class="w-4 h-4"></i>
-                  Margen
                 </a>
               </div>
             </div>

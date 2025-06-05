@@ -17,6 +17,26 @@ const HomeContent = {
             </header>
 
             <div class="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
+              <!-- Mercados -->
+              <a
+                href="#"
+                @click.prevent="showTool('mercados')"
+                class="group block border border-gray-200 rounded-lg p-5 sm:p-6 bg-white shadow hover:shadow-lg transition"
+              >
+                <div class="flex items-center gap-4">
+                  <div class="bg-red-100 text-red-700 p-3 rounded-full">
+                    <i data-lucide="globe" class="w-6 h-6"></i>
+                  </div>
+                  <h2
+                    class="text-base sm:text-lg font-semibold text-gray-800 group-hover:text-red-700"
+                  >
+                    Estado de los Mercados
+                  </h2>
+                </div>
+                <p class="mt-3 text-gray-600 text-sm">
+                  Consulta el estado actual de los principales mercados bursátiles del mundo, con horarios locales y tiempos de apertura/cierre.
+                </p>
+              </a>
               <!-- Lote -->
               <a
                 href="#"
@@ -38,7 +58,26 @@ const HomeContent = {
                   en tu riesgo por operación y el stop loss definido.
                 </p>
               </a>
-
+              <!-- Margen -->
+              <a
+                href="#"
+                @click.prevent="showTool('margen')"
+                class="group block border border-gray-200 rounded-lg p-5 sm:p-6 bg-white shadow hover:shadow-lg transition"
+              >
+                <div class="flex items-center gap-4">
+                  <div class="bg-indigo-100 text-indigo-700 p-3 rounded-full">
+                    <i data-lucide="scale" class="w-6 h-4"></i>
+                  </div>
+                  <h2
+                    class="text-base sm:text-lg font-semibold text-gray-800 group-hover:text-indigo-700"
+                  >
+                    Calculadora de margen requerido
+                  </h2>
+                </div>
+                <p class="mt-3 text-gray-600 text-sm">
+                  Calcula el margen necesario para abrir una posición según el tamaño del lote y el apalancamiento seleccionado.
+                </p>
+              </a>
               <!-- Ganancia -->
               <a
                 href="#"
@@ -60,7 +99,6 @@ const HomeContent = {
                   entrada y salida, tipo de operación y apalancamiento.
                 </p>
               </a>
-
               <!-- Break-even -->
               <a
                 href="#"
@@ -81,7 +119,6 @@ const HomeContent = {
                   Calcula el punto de equilibrio para mover tu stop loss a break-even basado en el porcentaje de recorrido hacia tu take profit.
                 </p>
               </a>
-
               <!-- Simulador R:R -->
               <a
                 href="#"
@@ -103,53 +140,10 @@ const HomeContent = {
                   si la operación tiene una relación R:R favorable.
                 </p>
               </a>
-
-              <!-- Margen -->
-              <a
-                href="#"
-                @click.prevent="showTool('margen')"
-                class="group block border border-gray-200 rounded-lg p-5 sm:p-6 bg-white shadow hover:shadow-lg transition"
-              >
-                <div class="flex items-center gap-4">
-                  <div class="bg-indigo-100 text-indigo-700 p-3 rounded-full">
-                    <i data-lucide="scale" class="w-6 h-4"></i>
-                  </div>
-                  <h2
-                    class="text-base sm:text-lg font-semibold text-gray-800 group-hover:text-indigo-700"
-                  >
-                    Calculadora de margen requerido
-                  </h2>
-                </div>
-                <p class="mt-3 text-gray-600 text-sm">
-                  Calcula el margen necesario para abrir una posición según el tamaño del lote y el apalancamiento seleccionado.
-                </p>
-              </a>
-
-              <!-- Mercados -->
-              <a
-                href="#"
-                @click.prevent="showTool('mercados')"
-                class="group block border border-gray-200 rounded-lg p-5 sm:p-6 bg-white shadow hover:shadow-lg transition"
-              >
-                <div class="flex items-center gap-4">
-                  <div class="bg-red-100 text-red-700 p-3 rounded-full">
-                    <i data-lucide="globe" class="w-6 h-6"></i>
-                  </div>
-                  <h2
-                    class="text-base sm:text-lg font-semibold text-gray-800 group-hover:text-red-700"
-                  >
-                    Estado de los Mercados
-                  </h2>
-                </div>
-                <p class="mt-3 text-gray-600 text-sm">
-                  Consulta el estado actual de los principales mercados bursátiles del mundo, con horarios locales y tiempos de apertura/cierre.
-                </p>
-              </a>
             </div>
           </div>
         </div>
       </div>
-
       <template v-else>
         <component :is="currentComponent"></component>
       </template>
