@@ -401,6 +401,19 @@ const GananciaCalculator = {
       if (lastLote) this.lote = Number(lastLote);
       if (lastApalancamiento) this.apalancamiento = Number(lastApalancamiento);
       if (lastResultado) this.resultado = JSON.parse(lastResultado);
+
+      // Si hay datos guardados en localStorage, mostrar la ayuda contextual
+      if (
+        lastPair ||
+        lastTipoOperacion ||
+        lastPrecioEntrada ||
+        lastPrecioSalida ||
+        lastLote ||
+        lastApalancamiento ||
+        lastResultado
+      ) {
+        this.setAyuda("result");
+      }
     },
   },
   watch: {

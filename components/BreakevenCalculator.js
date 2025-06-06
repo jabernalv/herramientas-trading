@@ -278,6 +278,11 @@ const BreakevenCalculator = {
       if (lastSpread) this.spread = Number(lastSpread);
       if (lastComision) this.comision = Number(lastComision);
       if (lastResultado) this.resultado = JSON.parse(lastResultado);
+
+      // Si hay datos guardados en localStorage, mostrar la ayuda contextual
+      if (lastPair || lastLote || lastSpread || lastComision || lastResultado) {
+        this.setAyuda("result");
+      }
     },
   },
   mounted() {

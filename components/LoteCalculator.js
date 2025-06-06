@@ -263,6 +263,17 @@ const LoteCalculator = {
         Number(localStorage.getItem("lastRiskPercent")) || null;
       this.stopLossPips =
         Number(localStorage.getItem("lastStopLossPips")) || null;
+
+      // Si hay datos en localStorage, mostrar la ayuda contextual
+      if (
+        this.pair ||
+        this.accountSize ||
+        this.riskPercent ||
+        this.stopLossPips
+      ) {
+        this.calculateLot();
+        this.setAyuda("result");
+      }
     },
   },
   mounted() {

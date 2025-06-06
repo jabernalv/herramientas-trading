@@ -685,6 +685,21 @@ const SimuladorCalculator = {
     if (lastResultado) this.resultado = JSON.parse(lastResultado);
     if (lastStopPips) this.stopPips = Number(lastStopPips);
     if (lastTakePips) this.takePips = Number(lastTakePips);
+
+    // Si hay datos guardados en localStorage, mostrar la ayuda contextual
+    if (
+      lastPair ||
+      lastDireccion ||
+      lastLote ||
+      lastEntrada ||
+      lastStop ||
+      lastTake ||
+      lastResultado ||
+      lastStopPips ||
+      lastTakePips
+    ) {
+      this.setAyuda("result");
+    }
   },
   updated() {
     if (window.MathJax) {
