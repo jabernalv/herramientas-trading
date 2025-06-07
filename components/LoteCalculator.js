@@ -90,7 +90,6 @@ const LoteCalculator = {
               />
             </div>
           </div>
-
           <div class="text-center mb-6">
             <button
               @click="handleClick"
@@ -102,7 +101,6 @@ const LoteCalculator = {
               Calcular lote
             </button>
           </div>
-
           <div v-if="lotSize !== null" class="text-center mb-6">
             <div class="inline-flex flex-col items-center justify-center px-6 py-4 rounded-lg bg-green-100 border border-green-300 shadow-md animate-fade-in">
               <div class="flex items-center gap-2 mb-2">
@@ -129,7 +127,6 @@ const LoteCalculator = {
               </div>
             </div>
           </div>
-
           <div class="mb-4">
             <h2 class="text-lg font-bold mb-2">Tabla de valores pip por lote</h2>
             <table class="w-full text-sm border border-gray-300" @mouseover="setAyuda('pipTable')">

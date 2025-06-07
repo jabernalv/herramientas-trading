@@ -235,7 +235,6 @@ const SimuladorCalculator = {
               Simular riesgo - recompensa
             </button>
           </div>
-
           <!-- Resultados -->
           <div v-if="resultado" class="text-center mb-6">
             <div class="inline-flex flex-col items-center justify-center px-6 py-4 rounded-lg bg-green-100 border border-green-300 shadow-md animate-fade-in">
@@ -247,7 +246,6 @@ const SimuladorCalculator = {
                 1:{{ resultado.relacion.toFixed(2) }}
               </p>
             </div>
-
             <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200 animate-fade-in">
               <p class="text-sm text-blue-800 mb-2">Fórmula aplicada:</p>
               <div class="text-center" v-html="calculoHTML"></div>
@@ -260,7 +258,6 @@ const SimuladorCalculator = {
                 <div>Valor del pip = \${{ tradingPairs[pair].valorPip }}</div>
               </div>
             </div>
-
             <div class="mt-4 p-4 bg-gray-100 border border-gray-300 rounded text-sm">
               <div class="grid grid-cols-2 gap-4">
                 <div>
@@ -279,7 +276,6 @@ const SimuladorCalculator = {
               </p>
             </div>
           </div>
-
           <!-- Información del par seleccionado -->
           <div v-if="pair && tradingPairs[pair]" class="text-sm bg-blue-50 border border-blue-200 p-4 rounded mb-6">
             <h3 class="font-semibold mb-2">{{ tradingPairs[pair].nombre }}</h3>

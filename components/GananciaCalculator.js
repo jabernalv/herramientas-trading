@@ -34,14 +34,12 @@ const GananciaCalculator = {
           </div>
         </div>
       </div>
-
       <div class="bg-white shadow-md rounded p-6 max-w-7xl w-full grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- Columna principal -->
         <div class="md:col-span-2">
           <h1 class="text-2xl font-bold mb-6 text-center">
             Calculadora de ganancia en trading
           </h1>
-
           <!-- Selector de par -->
           <div class="mb-4 relative">
             <label class="block font-semibold mb-1">Par de divisas o activo</label>
@@ -59,7 +57,6 @@ const GananciaCalculator = {
               </option>
             </select>
           </div>
-
           <!-- Tipo de operación -->
           <div class="mb-4">
             <label class="block font-semibold mb-1">Tipo de operación</label>
@@ -72,7 +69,6 @@ const GananciaCalculator = {
               <option value="venta">Venta (short)</option>
             </select>
           </div>
-
           <!-- Entradas -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div class="relative">
@@ -132,7 +128,6 @@ const GananciaCalculator = {
               </select>
             </div>
           </div>
-
           <!-- Botón -->
           <div class="text-center mb-6">
             <button
@@ -143,7 +138,6 @@ const GananciaCalculator = {
               Calcular ganancia
             </button>
           </div>
-
           <!-- Resultados -->
           <div v-if="resultado" class="text-center mb-6">
             <div class="inline-flex flex-col items-center justify-center px-6 py-4 rounded-lg bg-green-100 border border-green-300 shadow-md animate-fade-in">
@@ -155,7 +149,6 @@ const GananciaCalculator = {
                 \${{ resultado.ganancia.toFixed(2) }}
               </p>
             </div>
-
             <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200 animate-fade-in">
               <p class="text-sm text-blue-800 mb-2">Fórmula aplicada:</p>
               <div class="text-center" v-html="formulaHTML"></div>
@@ -169,7 +162,6 @@ const GananciaCalculator = {
                 <div>Unidades = {{ tradingPairs[pair].unidades.toLocaleString() }}</div>
               </div>
             </div>
-
             <div class="mt-4 p-4 bg-gray-100 border border-gray-300 rounded text-sm">
               <div class="grid grid-cols-2 gap-4">
                 <div>
@@ -195,7 +187,6 @@ const GananciaCalculator = {
               </p>
             </div>
           </div>
-
           <!-- Información del par seleccionado -->
           <div v-if="pair && tradingPairs[pair]" class="text-sm bg-blue-50 border border-blue-200 p-4 rounded mb-6">
             <h3 class="font-semibold mb-2">{{ tradingPairs[pair].nombre }}</h3>

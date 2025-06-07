@@ -7,7 +7,6 @@ const BreakevenCalculator = {
           <h1 class="text-2xl font-bold mb-6 text-center">
             Calculadora de Break-even
           </h1>
-
           <!-- Par -->
           <div class="mb-4 relative">
             <label class="block font-semibold mb-1" for="pair">Par de divisas o activo</label>
@@ -27,7 +26,6 @@ const BreakevenCalculator = {
               </option>
             </select>
           </div>
-
           <!-- Inputs -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div class="relative">
@@ -85,7 +83,6 @@ const BreakevenCalculator = {
               />
             </div>
           </div>
-
           <!-- Mensaje de error -->
           <div
             v-if="error"
@@ -93,7 +90,6 @@ const BreakevenCalculator = {
           >
             {{ error }}
           </div>
-
           <!-- Botón -->
           <div class="text-center mb-6">
             <button
@@ -104,7 +100,6 @@ const BreakevenCalculator = {
               Calcular break-even
             </button>
           </div>
-
           <!-- Resultados -->
           <div
             v-if="resultado"
@@ -125,7 +120,6 @@ const BreakevenCalculator = {
               <p>Se debe tener en cuenta que el spread se incrementa cada día y que hay días que el spread es mayor.</p>
             </div>
           </div>
-
           <!-- Información del par -->
           <div v-if="pair && tradingPairs[pair]" class="text-sm bg-blue-50 border border-blue-200 p-4 rounded">
             <h3 class="font-semibold mb-2">{{ tradingPairs[pair].nombre }}</h3>
@@ -140,7 +134,6 @@ const BreakevenCalculator = {
             </div>
           </div>
         </div>
-
         <!-- Ayuda contextual -->
         <div class="bg-gray-100 border border-gray-300 p-4 rounded text-sm leading-relaxed">
           <h2 class="font-bold text-lg mb-2">Ayuda contextual</h2>
