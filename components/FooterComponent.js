@@ -6,7 +6,9 @@ const FooterComponent = {
     </footer>
   `,
   mounted() {
-    fetch("https://intranet.dirigiendoproyectos.com/contador-trading.php")
+    fetch(
+      "https://intranet.dirigiendoproyectos.com/contador-visitas.php?type=trading"
+    )
       .then((res) => res.json())
       .then((data) => {
         const span = document.getElementById("visitas");
