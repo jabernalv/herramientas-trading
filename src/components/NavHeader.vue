@@ -1,223 +1,220 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import {
-  Menu,
-  Globe,
-  Calculator,
-  ChevronDown,
-  Layers,
-  Percent,
-  TrendingUp,
-  Equal,
-  BarChart3,
-  Home,
-} from "lucide-vue-next";
+import Menubar from "primevue/menubar";
+import Button from "primevue/button";
+import Menu from "primevue/menu";
+import { toolsMenu } from "../data/toolsMenu";
+
+// Construir los items del menú a partir del repositorio centralizado
+type PrimeMenuItem = {
+  label: string;
+  icon?: string;
+  command?: () => void;
+  items?: PrimeMenuItem[];
+};
 
 const router = useRouter();
-const isMenuOpen = ref(false);
-const isMobileMenuOpen = ref(false);
+const mobileMenu = ref<InstanceType<typeof Menu> | null>(null);
+const isMobileMenuVisible = ref(false);
 
-const toggleMenu = () => {
-  isMenuOpen.value = !isMenuOpen.value;
+const toggleMobileMenu = (event: MouseEvent) => {
+  mobileMenu.value?.toggle(event);
+  isMobileMenuVisible.value = !isMobileMenuVisible.value;
 };
 
-const toggleMobileMenu = () => {
-  isMobileMenuOpen.value = !isMobileMenuOpen.value;
-};
+// Generar los subitems de herramientas desde toolsMenu
+const herramientasSubItems: PrimeMenuItem[] = toolsMenu.map((tool) => ({
+  label: tool.label,
+  command: () => router.push(tool.route),
+}));
 
-const navigateTo = (route: string) => {
-  router.push(route);
-  isMenuOpen.value = false;
-  isMobileMenuOpen.value = false;
-};
+const menuItems: PrimeMenuItem[] = [
+  {
+    label: "Inicio",
+    icon: "pi pi-home",
+    command: () => router.push("/"),
+  },
+  ...herramientasSubItems,
+];
 
-const closeMenuOnClickOutside = (event: Event) => {
-  const target = event.target as HTMLElement;
-  if (isMenuOpen.value && !target.closest(".relative")) {
-    isMenuOpen.value = false;
-  }
-};
+const items: PrimeMenuItem[] = [
+  {
+    label: "Inicio",
+    icon: "pi pi-home",
+    command: () => router.push("/"),
+  },
+  {
+    label: "Herramientas",
+    icon: "pi pi-wrench",
+    items: herramientasSubItems,
+  },
+];
+
+const NAVHEADER_GRADIENT_KEY = "NAVHEADER_GRADIENT";
+const DEFAULT_GRADIENT =
+  "linear-gradient(75deg, rgba(72, 107, 173, 1) 0%, rgba(15, 28, 184, 1) 25%, rgba(86, 58, 235, 1) 50%, rgba(43, 101, 162, 1) 75%, rgba(7, 9, 255, 1) 100%)";
+
+const navGradient = ref<string>(DEFAULT_GRADIENT);
+
+function loadNavGradient() {
+  const stored = localStorage.getItem(NAVHEADER_GRADIENT_KEY);
+  navGradient.value = stored || DEFAULT_GRADIENT;
+}
 
 onMounted(() => {
-  document.addEventListener("click", closeMenuOnClickOutside);
+  loadNavGradient();
+  window.addEventListener("navheader-gradient-updated", loadNavGradient);
 });
 
-onBeforeUnmount(() => {
-  document.removeEventListener("click", closeMenuOnClickOutside);
+// Limpieza del listener si el componente se destruye
+defineExpose({
+  beforeUnmount() {
+    window.removeEventListener("navheader-gradient-updated", loadNavGradient);
+  },
 });
 </script>
 
 <template>
-  <nav
-    class="bg-gradient-to-r from-blue-900 to-blue-600 text-white p-4 shadow-lg fixed w-full top-0 left-0 z-50"
+  <header
+    :style="{ background: navGradient }"
+    class="fixed top-0 left-0 right-0 z-50"
   >
-    <div class="flex justify-between items-center w-full">
-      <router-link
-        to="/"
-        class="text-xl font-bold tracking-wider hover:text-blue-200 transition-colors flex items-center gap-2"
-      >
-        <img
-          src="/assets/trading_tools.svg"
-          alt="Trading Tools"
-          class="h-8 w-8"
-        />
-        Herramientas de trading
-      </router-link>
-      <!-- Botón hamburguesa para móvil -->
-      <button
-        @click="toggleMobileMenu"
-        class="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-300 hover:text-white hover:bg-blue-700 focus:outline-none"
-      >
-        <span class="sr-only">Abrir menú principal</span>
-        <Menu class="block h-6 w-6" />
-      </button>
-      <!-- Menú de escritorio -->
-      <div class="hidden md:flex space-x-4">
-        <router-link
-          to="/mercados"
-          class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2"
-        >
-          <Globe class="w-4 h-4" />
-          Mercados
-        </router-link>
-        <div class="relative">
-          <button
-            @click="toggleMenu"
-            class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium inline-flex items-center"
-            :class="{ 'text-white': isMenuOpen }"
+    <div class="mx-auto px-4">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center gap-2">
+          <img
+            src="/assets/trading_tools.svg"
+            alt="Trading Tools"
+            class="h-8 w-8"
+          />
+          <span class="text-xl font-bold text-white"
+            >🛠️ Herramientas de Trading</span
           >
-            <Calculator class="w-4 h-4 mr-1" />
-            <span>Calculadoras</span>
-            <ChevronDown
-              class="w-4 h-4 ml-1"
-              :class="{ 'transform rotate-180': isMenuOpen }"
-            />
-          </button>
-          <div
-            v-show="isMenuOpen"
-            class="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5"
-          >
-            <div class="py-1">
-              <a
-                href="#"
-                @click.prevent="navigateTo('/lote')"
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-              >
-                <Layers class="w-4 h-4" />
-                Lote
-              </a>
-              <a
-                href="#"
-                @click.prevent="navigateTo('/margen')"
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-              >
-                <Percent class="w-4 h-4" />
-                Margen
-              </a>
-              <a
-                href="#"
-                @click.prevent="navigateTo('/ganancia')"
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-              >
-                <TrendingUp class="w-4 h-4" />
-                Ganancia
-              </a>
-              <a
-                href="#"
-                @click.prevent="navigateTo('/breakeven')"
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-              >
-                <Equal class="w-4 h-4" />
-                Break-even
-              </a>
-              <a
-                href="#"
-                @click.prevent="navigateTo('/simulador')"
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-              >
-                <BarChart3 class="w-4 h-4" />
-                Simulador R:R
-              </a>
-            </div>
-          </div>
         </div>
-        <router-link
-          to="/"
-          class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2"
-        >
-          <Home class="w-4 h-4" />
-          Inicio
-        </router-link>
-      </div>
-      <!-- Menú móvil -->
-      <div
-        v-show="isMobileMenuOpen"
-        class="md:hidden absolute top-full left-0 w-full bg-blue-800 shadow-lg"
-      >
-        <div class="px-2 pt-2 pb-3 space-y-1">
-          <a
-            href="#"
-            @click.prevent="navigateTo('/')"
-            class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
-          >
-            <Home class="w-4 h-4 inline-block mr-2" />
-            Inicio
-          </a>
-          <a
-            href="#"
-            @click.prevent="navigateTo('/mercados')"
-            class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
-          >
-            <Globe class="w-4 h-4 inline-block mr-2" />
-            Mercados
-          </a>
-          <a
-            href="#"
-            @click.prevent="navigateTo('/lote')"
-            class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
-          >
-            <Layers class="w-4 h-4 inline-block mr-2" />
-            Lote
-          </a>
-          <a
-            href="#"
-            @click.prevent="navigateTo('/ganancia')"
-            class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
-          >
-            <TrendingUp class="w-4 h-4 inline-block mr-2" />
-            Ganancia
-          </a>
-          <a
-            href="#"
-            @click.prevent="navigateTo('/breakeven')"
-            class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
-          >
-            <Equal class="w-4 h-4 inline-block mr-2" />
-            Break-even
-          </a>
-          <a
-            href="#"
-            @click.prevent="navigateTo('/margen')"
-            class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
-          >
-            <Percent class="w-4 h-4 inline-block mr-2" />
-            Margen
-          </a>
-          <a
-            href="#"
-            @click.prevent="navigateTo('/simulador')"
-            class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
-          >
-            <BarChart3 class="w-4 h-4 inline-block mr-2" />
-            Simulador R:R
-          </a>
+
+        <!-- Menú de escritorio -->
+        <nav class="hidden md:block">
+          <Menubar :model="items" class="bg-transparent border-none">
+            <template #item="{ item, props }">
+              <a
+                v-bind="props.action"
+                class="p-menuitem-link flex items-center"
+              >
+                <span class="p-menuitem-icon">
+                  <!-- Icono SVG para subitems de herramientas -->
+                  <template
+                    v-if="items[1].items && (items[1].items as any[]).includes(item)"
+                  >
+                    <component
+                      v-if="
+                        item.label &&
+                        toolsMenu.find((t) => t.label === item.label)?.icon
+                      "
+                      :is="toolsMenu.find((t) => t.label === item.label)?.icon"
+                      :class="[
+                        'w-4 h-4',
+                        toolsMenu.find((t) => t.label === item.label)
+                          ?.iconColor || '',
+                      ]"
+                    />
+                  </template>
+                  <!-- Icono PrimeVue para Inicio y Herramientas -->
+                  <template v-else-if="item.icon">
+                    <i :class="item.icon"></i>
+                  </template>
+                </span>
+                <span class="p-menuitem-text">{{ item.label }}</span>
+              </a>
+            </template>
+          </Menubar>
+        </nav>
+
+        <!-- Botón de menú móvil -->
+        <div class="block md:hidden">
+          <Button
+            icon="pi pi-bars"
+            @click="toggleMobileMenu"
+            class="p-button-text p-button-white"
+          />
+
+          <Menu
+            ref="mobileMenu"
+            :model="menuItems"
+            :popup="true"
+            class="w-full mobile-menu"
+          />
         </div>
       </div>
     </div>
-  </nav>
+  </header>
 </template>
 
 <style scoped>
-/* Sin wrapper restrictivo, header 100% flotante y fijo arriba */
+:deep(.p-menubar) {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+:deep(.p-menuitem-text) {
+  color: white !important;
+}
+
+/* Texto oscuro solo en los submenús */
+:deep(.p-menubar .p-submenu-list .p-menuitem-text) {
+  color: #222 !important;
+}
+
+:deep(.p-menuitem-icon) {
+  color: white !important;
+}
+
+:deep(.p-submenu-icon) {
+  color: white !important;
+}
+
+:deep(.p-menuitem-link:hover) {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+:deep(.p-button-text.p-button-white) {
+  color: white !important;
+}
+
+:deep(.p-button-text.p-button-white:hover) {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+:deep(.mobile-menu) {
+  width: 100vw !important;
+  position: fixed !important;
+  top: 4rem !important;
+  left: 0 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  background: #1e40af !important;
+
+  .p-menuitem {
+    width: 100%;
+
+    .p-menuitem-link {
+      padding: 1rem !important;
+      color: white !important;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.1) !important;
+      }
+
+      .p-menuitem-icon,
+      .p-menuitem-text {
+        color: white !important;
+      }
+    }
+  }
+}
+
+.container {
+  max-width: 1280px;
+}
 </style>
