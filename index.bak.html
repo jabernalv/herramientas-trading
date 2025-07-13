@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Herramientas de Trading</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Google Analytics -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+      gtag("config", "G-XXXXXXXXXX");
+    </script>
+    <script src="//unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <script src="//unpkg.com/lucide"></script>
+    <script
+      id="MathJax-script"
+      async
+      src="//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    ></script>
+    <script src="//cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <style>
+      @keyframes fade-in {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .animate-fade-in {
+        animation: fade-in 0.7s;
+      }
+    </style>
+    <!-- Google tag (gtag.js) -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-PMK3YP22XT"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+
+      gtag("config", "G-PMK3YP22XT");
+    </script>
+  </head>
+  <body class="bg-gray-50 min-h-screen">
+    <div id="app" class="pb-16">
+      <!-- Usar componente nav -->
+      <nav-header @show-tool="$refs.homeContent.showTool($event)"></nav-header>
+
+      <!-- Espaciador para compensar el nav fijo -->
+      <div class="h-16"></div>
+
+      <!-- Usar componente home -->
+      <home-content ref="homeContent"></home-content>
+
+      <!-- Usar componente footer -->
+      <footer-component></footer-component>
+    </div>
+
+    <!-- Importar componentes -->
+    <script src="src/data/trading-pairs.js?v=202403191420"></script>
+    <script src="components/NavHeader.js?v=202403191420"></script>
+    <script src="components/FooterComponent.js?v=202403191420"></script>
+    <script src="components/LoteCalculator.js?v=202403191420"></script>
+    <script src="components/GananciaCalculator.js?v=202403191420"></script>
+    <script src="components/BreakevenCalculator.js?v=202403191420"></script>
+    <script src="components/SimuladorCalculator.js?v=202403191420"></script>
+    <script src="components/MargenCalculator.js?v=202403191420"></script>
+    <script src="components/MercadosCalculator.js?v=202403191420"></script>
+    <script src="components/HomeContent.js?v=202403191420"></script>
+
+    <script>
+      const { createApp } = Vue;
+      const app = createApp({
+        components: {
+          "nav-header": NavHeader,
+          "footer-component": FooterComponent,
+          "home-content": HomeContent,
+          "ganancia-calculator": GananciaCalculator,
+          "lote-calculator": LoteCalculator,
+          "breakeven-calculator": BreakevenCalculator,
+          "simulador-calculator": SimuladorCalculator,
+          "margen-calculator": MargenCalculator,
+          "mercados-calculator": MercadosCalculator,
+        },
+      });
+
+      app.mount("#app");
+
+      // Inicializar los íconos de Lucide después de que Vue haya montado la aplicación
+      document.addEventListener("DOMContentLoaded", () => {
+        lucide.createIcons();
+      });
+    </script>
+  </body>
+</html>
